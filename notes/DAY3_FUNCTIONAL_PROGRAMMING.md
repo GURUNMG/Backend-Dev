@@ -5138,3 +5138,834 @@ The behavior depends entirely on its implementation.
 * Captured local variables inside lambdas must be **final or effectively final** because lambdas capture the **reference value**, not the stack variable itself.
 * `Stream.generate()` is the primary Stream API method that accepts a `Supplier`.
 * `Supplier` does not guarantee whether it returns a new object or an existing one; that behavior depends on the implementation.
+
+# Day 3 – Functional Programming
+
+## Chapter 7 – Method References (`::`) (Interview Notes)
+
+> **Topics Covered**
+>
+> * Why Method References were introduced
+> * What is a Method Reference?
+> * `::` Operator
+> * Target Typing
+> * Lambda vs Method Reference
+> * Four Types of Method References
+> * Constructor References
+> * Parameter Matching
+> * Stream API Integration
+> * JVM Internals
+> * Interview Questions
+
+---
+
+# Overview
+
+Method References are a shorthand syntax introduced in Java 8 to make lambda expressions more concise.
+
+Whenever a lambda simply calls an existing method or constructor without adding extra logic, it can usually be replaced with a method reference.
+
+Method references improve:
+
+* Readability
+* Maintainability
+* Expressiveness
+
+They do **not** improve performance.
+
+Internally, both lambdas and method references are implemented using `invokedynamic` and `LambdaMetafactory`.
+
+---
+
+# Why Were Method References Introduced?
+
+Suppose we have
+
+```java
+Function<String, Integer> length =
+        text -> text.length();
+```
+
+This lambda
+
+* accepts a String
+* immediately calls `length()`
+* returns the result
+
+There is no additional logic.
+
+Java allows us to replace it with
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+Both behave identically.
+
+Method references simply eliminate unnecessary boilerplate.
+
+---
+
+# Definition
+
+A Method Reference is a shorthand notation for a lambda expression that directly invokes an existing method or constructor.
+
+General Syntax
+
+```java
+ClassName::staticMethod
+```
+
+```java
+ClassName::instanceMethod
+```
+
+```java
+objectReference::instanceMethod
+```
+
+```java
+ClassName::new
+```
+
+The `::` operator is called the **Method Reference Operator**.
+
+---
+
+# Lambda vs Method Reference
+
+Lambda
+
+```java
+Function<String, Integer> length =
+        text -> text.length();
+```
+
+Method Reference
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+Equivalent behavior.
+
+---
+
+Another example
+
+Lambda
+
+```java
+Consumer<String> printer =
+        text -> System.out.println(text);
+```
+
+Method Reference
+
+```java
+Consumer<String> printer =
+        System.out::println;
+```
+
+---
+
+# Method References Require a Functional Interface
+
+A method reference cannot exist independently.
+
+This is illegal.
+
+```java
+String::length;
+```
+
+Compiler Error.
+
+Reason
+
+Java does not know which method signature should be implemented.
+
+Correct
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+The Functional Interface provides the target type.
+
+---
+
+# Target Typing
+
+Example
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+Compiler Steps
+
+```text
+Function<String, Integer>
+        │
+        ▼
+Target Functional Interface
+        │
+        ▼
+Locate SAM
+
+R apply(T)
+        │
+        ▼
+Generic Substitution
+
+T = String
+R = Integer
+        │
+        ▼
+Method becomes
+
+Integer apply(String)
+        │
+        ▼
+Can String::length satisfy it?
+
+Yes
+
+Compilation Successful
+```
+
+---
+
+# Equivalent Lambda
+
+Method Reference
+
+```java
+String::length
+```
+
+Compiler treats it as
+
+```java
+text -> text.length()
+```
+
+Exactly the same behavior.
+
+---
+
+# Four Types of Method References
+
+Java supports four types.
+
+| Type                                   | Example          |
+| -------------------------------------- | ---------------- |
+| Static Method                          | `Math::max`      |
+| Instance Method of an Arbitrary Object | `String::length` |
+| Instance Method of a Particular Object | `printer::print` |
+| Constructor Reference                  | `Employee::new`  |
+
+---
+
+# 1. Static Method Reference
+
+Suppose
+
+```java
+class Calculator {
+
+    static Integer square(Integer number) {
+        return number * number;
+    }
+
+}
+```
+
+Lambda
+
+```java
+Function<Integer, Integer> square =
+        number -> Calculator.square(number);
+```
+
+Method Reference
+
+```java
+Function<Integer, Integer> square =
+        Calculator::square;
+```
+
+---
+
+# 2. Instance Method of an Arbitrary Object
+
+Example
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+There is no String object yet.
+
+The object will be supplied later.
+
+Execution
+
+```java
+length.apply("Java");
+```
+
+Conceptually becomes
+
+```java
+"Java".length();
+```
+
+---
+
+Another example
+
+```java
+Predicate<String> empty =
+        String::isEmpty;
+```
+
+Equivalent lambda
+
+```java
+text -> text.isEmpty();
+```
+
+---
+
+# 3. Instance Method of a Particular Object
+
+Suppose
+
+```java
+Printer printer =
+        new Printer();
+```
+
+Lambda
+
+```java
+Consumer<String> consumer =
+        text -> printer.print(text);
+```
+
+Method Reference
+
+```java
+Consumer<String> consumer =
+        printer::print;
+```
+
+The object already exists.
+
+---
+
+# 4. Constructor Reference
+
+Suppose
+
+```java
+class Employee {
+
+    Employee() {}
+
+}
+```
+
+Lambda
+
+```java
+Supplier<Employee> supplier =
+        () -> new Employee();
+```
+
+Method Reference
+
+```java
+Supplier<Employee> supplier =
+        Employee::new;
+```
+
+Equivalent behavior.
+
+---
+
+# Constructor References with Parameters
+
+Method references are **not limited** to no-argument constructors.
+
+The constructor must match the target Functional Interface.
+
+---
+
+## No-Argument Constructor
+
+Constructor
+
+```java
+Employee()
+```
+
+Target Interface
+
+```java
+Supplier<Employee>
+```
+
+SAM
+
+```java
+Employee get();
+```
+
+Method Reference
+
+```java
+Supplier<Employee> supplier =
+        Employee::new;
+```
+
+---
+
+## One-Parameter Constructor
+
+Constructor
+
+```java
+Employee(String name)
+```
+
+Target Interface
+
+```java
+Function<String, Employee>
+```
+
+SAM
+
+```java
+Employee apply(String)
+```
+
+Method Reference
+
+```java
+Function<String, Employee> creator =
+        Employee::new;
+```
+
+Equivalent lambda
+
+```java
+name -> new Employee(name)
+```
+
+---
+
+## Two-Parameter Constructor
+
+Constructor
+
+```java
+Employee(String name, Integer salary)
+```
+
+Target Interface
+
+```java
+BiFunction<String, Integer, Employee>
+```
+
+SAM
+
+```java
+Employee apply(String, Integer)
+```
+
+Method Reference
+
+```java
+BiFunction<String, Integer, Employee> creator =
+        Employee::new;
+```
+
+Equivalent lambda
+
+```java
+(name, salary) ->
+        new Employee(name, salary)
+```
+
+---
+
+## Three or More Parameters
+
+Java does **not** provide
+
+* `TriFunction`
+* `QuadFunction`
+
+Create a custom Functional Interface.
+
+```java
+@FunctionalInterface
+interface TriFunction<A, B, C, R> {
+
+    R apply(A a, B b, C c);
+
+}
+```
+
+Now
+
+```java
+TriFunction<String,
+            Integer,
+            String,
+            Employee> creator =
+                    Employee::new;
+```
+
+works correctly.
+
+The limitation is the available Functional Interfaces, **not** Method References.
+
+---
+
+# Method References with Static Methods
+
+Suppose
+
+```java
+class Calculator {
+
+    static Integer add(Integer a,
+                       Integer b) {
+
+        return a + b;
+
+    }
+
+}
+```
+
+Method Reference
+
+```java
+BiFunction<Integer,
+           Integer,
+           Integer> add =
+                    Calculator::add;
+```
+
+Execution
+
+```java
+add.apply(5, 5);
+```
+
+Conceptually becomes
+
+```java
+Calculator.add(5, 5);
+```
+
+---
+
+# Parameter Matching Rule
+
+The compiler does not match only by parameter count.
+
+It matches the **entire SAM signature**.
+
+It compares
+
+* Parameter Count
+* Parameter Types
+* Return Type
+
+If compatible,
+
+the Method Reference compiles.
+
+Visual Representation
+
+```text
+Functional Interface
+        │
+        ▼
+Single Abstract Method
+        │
+        ▼
+Compiler compares signature
+        │
+        ▼
+Existing Method / Constructor
+        │
+        ▼
+Compatible?
+        │
+     Yes ▼
+Compilation Successful
+```
+
+---
+
+# Method References in Stream API
+
+Without Method References
+
+```java
+employees.stream()
+         .map(employee -> employee.getName())
+         .forEach(name -> System.out.println(name));
+```
+
+With Method References
+
+```java
+employees.stream()
+         .map(Employee::getName)
+         .forEach(System.out::println);
+```
+
+Much cleaner.
+
+---
+
+# Method References and Functional Interfaces
+
+Examples
+
+Predicate
+
+```java
+Predicate<String> empty =
+        String::isEmpty;
+```
+
+---
+
+Function
+
+```java
+Function<Employee, String> name =
+        Employee::getName;
+```
+
+---
+
+Consumer
+
+```java
+Consumer<Employee> printer =
+        System.out::println;
+```
+
+---
+
+Supplier
+
+```java
+Supplier<Employee> supplier =
+        Employee::new;
+```
+
+Method references always implement a Functional Interface.
+
+---
+
+# JVM Perspective
+
+Example
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+Compilation Flow
+
+```text
+Method Reference
+        │
+        ▼
+Target Functional Interface
+(Function<String,Integer>)
+        │
+        ▼
+Locate SAM
+
+Integer apply(String)
+        │
+        ▼
+Compiler validates compatibility
+        │
+        ▼
+Generate invokedynamic
+        │
+        ▼
+LambdaMetafactory
+        │
+        ▼
+Function Object
+```
+
+No anonymous class is generated.
+
+---
+
+# Lambda vs Method Reference
+
+| Lambda                          | Method Reference              |
+| ------------------------------- | ----------------------------- |
+| More flexible                   | More concise                  |
+| Can contain multiple statements | Calls an existing method only |
+| Can contain custom logic        | Cannot add new logic          |
+| More verbose                    | More readable                 |
+
+---
+
+# Advantages
+
+* Reduces boilerplate
+* Improves readability
+* Makes Stream pipelines cleaner
+* Encourages reusable methods
+* Works naturally with Functional Interfaces
+* Same runtime performance as lambdas
+
+---
+
+# Limitations
+
+* Cannot contain additional logic
+* Requires a compatible Functional Interface
+* May be less readable if overused with overloaded methods
+
+---
+
+# Frequently Asked Interview Questions
+
+### What is a Method Reference?
+
+A shorthand syntax for a lambda expression that directly invokes an existing method or constructor.
+
+---
+
+### What is the Method Reference operator?
+
+```java
+::
+```
+
+---
+
+### Can a Method Reference exist without a Functional Interface?
+
+No.
+
+It requires a target Functional Interface so the compiler can determine the Single Abstract Method.
+
+---
+
+### What are the four types of Method References?
+
+* Static Method Reference
+* Instance Method of an Arbitrary Object
+* Instance Method of a Particular Object
+* Constructor Reference
+
+---
+
+### Are Method References faster than Lambdas?
+
+No.
+
+Both compile to nearly identical bytecode using `invokedynamic` and `LambdaMetafactory`.
+
+Method References improve readability, not performance.
+
+---
+
+### Can Method References be used with constructors having parameters?
+
+Yes.
+
+The constructor signature must match the target Functional Interface.
+
+Examples
+
+* `Supplier` → No parameters
+* `Function` → One parameter
+* `BiFunction` → Two parameters
+* Custom `TriFunction` → Three parameters
+
+---
+
+### Can Method References work with methods having multiple parameters?
+
+Yes.
+
+Example
+
+```java
+BiFunction<Integer,
+           Integer,
+           Integer> add =
+                    Calculator::add;
+```
+
+Execution
+
+```java
+add.apply(5, 5);
+```
+
+Conceptually becomes
+
+```java
+Calculator.add(5, 5);
+```
+
+---
+
+### How does the compiler resolve a Method Reference?
+
+The compiler compares the Functional Interface's Single Abstract Method with the referenced method or constructor.
+
+It checks
+
+* Parameter count
+* Parameter types
+* Return type
+
+If the signatures are compatible, the Method Reference is accepted.
+
+---
+
+# Key Takeaways
+
+* Method References are a concise form of lambda expressions.
+* They require a target Functional Interface.
+* The compiler resolves them using the Functional Interface's Single Abstract Method (SAM).
+* Java supports four types of Method References:
+
+    * Static Method
+    * Instance Method of an Arbitrary Object
+    * Instance Method of a Particular Object
+    * Constructor Reference
+* Method References can target methods and constructors with **any number of parameters**, provided a compatible Functional Interface exists.
+* The compiler matches the complete method signature, not just the parameter count.
+* Internally, Method References use `invokedynamic` and `LambdaMetafactory`, just like lambda expressions.
