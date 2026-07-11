@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Main {
@@ -35,5 +36,13 @@ public class Main {
         Consumer<Student> print= student -> System.out.println(student.department);
         print.accept(s1);
         print.accept(s2);
+
+        Supplier<Student> createStudent = () -> new Student();
+        Student thirdStudent = createStudent.get();
+        thirdStudent.age = 24;
+        thirdStudent.name = "Moses";
+        thirdStudent.department = "CSE";
+        System.out.println(thirdStudent.name);
+
     }
 }

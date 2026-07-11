@@ -4224,3 +4224,917 @@ Subsequent Consumers in the chain are not executed.
 * `Consumer.andThen()` allows sequential execution of multiple Consumers.
 * `Stream.forEach()` is the most common consumer of a `Consumer`.
 * Use `Consumer` when the primary intent is to **perform work**, not to **compute** or **transform** a value.
+
+# Day 3 – Functional Programming
+
+## Chapter 6 – Supplier<T> (Interview Notes)
+
+> **Topics Covered**
+>
+> * Why `Supplier` was introduced
+> * What is `Supplier<T>`?
+> * Generic Type (`T`)
+> * `get()` Method
+> * Target Typing
+> * Why `Supplier<Employee>` instead of `Supplier`
+> * Lazy Evaluation
+> * Variable Capture & Effectively Final
+> * Stream API Integration
+> * Interview Questions
+
+---
+
+# Overview
+
+`Supplier<T>` is one of the four core Functional Interfaces provided by Java.
+
+It represents a **producer**.
+
+A Supplier **accepts no input** and **returns one value**.
+
+Unlike
+
+* `Predicate` → evaluates
+* `Function` → transforms
+* `Consumer` → performs an action
+
+`Supplier` simply **supplies** or **creates** a value.
+
+It is primarily used for
+
+* Object Creation
+* Lazy Initialization
+* Random Value Generation
+* Configuration Lookup
+* Current Date/Time
+* Stream Generation
+* Factory Methods
+
+---
+
+# Why Was Supplier Introduced?
+
+Suppose your application needs an `Employee`.
+
+There are multiple ways to obtain it.
+
+* Create a new object
+* Read from a database
+* Read from a cache
+* Generate a UUID
+* Read configuration
+* Get current time
+
+Notice
+
+There is **no input**.
+
+You simply ask
+
+> Give me a value.
+
+Java extracted this behavior into the Functional Interface called **Supplier**.
+
+---
+
+# Definition
+
+`Supplier<T>` is a Functional Interface.
+
+```java
+@FunctionalInterface
+public interface Supplier<T> {
+
+    T get();
+
+}
+```
+
+It contains exactly one abstract method.
+
+```java
+T get();
+```
+
+Meaning
+
+> Produce and return an object of type `T`.
+
+---
+
+# Understanding Generic Type (T)
+
+Unlike `Function`
+
+```text
+Function<T, R>
+```
+
+Supplier has only one generic parameter.
+
+```text
+Supplier<T>
+```
+
+Reason
+
+Supplier has
+
+* No input parameter
+* One return value
+
+The generic type represents only the return type.
+
+---
+
+# Generic Type Examples
+
+Example
+
+```java
+Supplier<String>
+```
+
+Compiler substitutes
+
+```java
+String get();
+```
+
+---
+
+Example
+
+```java
+Supplier<Employee>
+```
+
+Compiler substitutes
+
+```java
+Employee get();
+```
+
+---
+
+Example
+
+```java
+Supplier<Integer>
+```
+
+Compiler substitutes
+
+```java
+Integer get();
+```
+
+---
+
+# Visual Representation
+
+```text
+No Input
+    │
+    ▼
+ Supplier
+    │
+    ▼
+Output (T)
+```
+
+Supplier always produces something.
+
+---
+
+# Basic Example
+
+```java
+Supplier<String> greeting =
+        () -> "Hello Java";
+```
+
+Execution
+
+```java
+String value = greeting.get();
+```
+
+Output
+
+```text
+Hello Java
+```
+
+No input is required.
+
+---
+
+# Integer Example
+
+```java
+Supplier<Integer> luckyNumber =
+        () -> 7;
+```
+
+Execution
+
+```java
+int number = luckyNumber.get();
+```
+
+Output
+
+```text
+7
+```
+
+---
+
+# Employee Example
+
+```java
+Supplier<Employee> employeeSupplier =
+        () -> new Employee("John", 70000);
+```
+
+Execution
+
+```java
+Employee employee =
+        employeeSupplier.get();
+```
+
+Every call creates and returns an Employee.
+
+---
+
+# Supplier Can Create New Objects
+
+```java
+Supplier<List<String>> listSupplier =
+        ArrayList::new;
+```
+
+Execution
+
+```java
+List<String> list =
+        listSupplier.get();
+```
+
+Each call creates a **new** `ArrayList`.
+
+This is one of the most common real-world uses.
+
+---
+
+# Target Typing
+
+Example
+
+```java
+Supplier<Employee> supplier =
+        () -> new Employee();
+```
+
+Compiler Steps
+
+```text
+Supplier<Employee>
+        │
+        ▼
+Target Functional Interface
+        │
+        ▼
+Locate Abstract Method
+
+T get()
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+        │
+        ▼
+Method Becomes
+
+Employee get()
+        │
+        ▼
+Compiler Validates Return Type
+        │
+        ▼
+Compilation Successful
+```
+
+The compiler knows the lambda must return an `Employee`.
+
+---
+
+# Why Supplier<Employee> Instead of Supplier?
+
+Example
+
+```java
+Supplier<Employee> supplier =
+        Employee::new;
+```
+
+Compiler infers
+
+```java
+Employee get();
+```
+
+---
+
+Now consider
+
+```java
+Supplier supplier =
+        Employee::new;
+```
+
+This is a **raw type**.
+
+Compiler treats it as
+
+```java
+Object get();
+```
+
+Now every retrieval requires casting.
+
+```java
+Employee employee =
+        (Employee) supplier.get();
+```
+
+Using generics provides
+
+* Compile-time type safety
+* No casting
+* Better readability
+
+---
+
+# Raw Type vs Generic Type
+
+| Generic Supplier      | Raw Supplier              |
+| --------------------- | ------------------------- |
+| `Supplier<Employee>`  | `Supplier`                |
+| `Employee get()`      | `Object get()`            |
+| Type-safe             | Not type-safe             |
+| No casting            | Casting required          |
+| Compile-time checking | Loses generic information |
+
+---
+
+# Lazy Evaluation
+
+One of the biggest advantages of Supplier.
+
+Instead of immediately creating an object
+
+```java
+Employee employee =
+        new Employee();
+```
+
+delay creation.
+
+```java
+Supplier<Employee> supplier =
+        Employee::new;
+```
+
+Nothing is created yet.
+
+Object creation happens only when
+
+```java
+supplier.get();
+```
+
+is called.
+
+This is known as **Lazy Evaluation**.
+
+---
+
+# Supplier May Return the Same Object
+
+Example
+
+```java
+Supplier<String> supplier =
+        () -> "Hello";
+```
+
+Execution
+
+```java
+String a = supplier.get();
+String b = supplier.get();
+```
+
+Both references point to the same String literal.
+
+```java
+a == b
+```
+
+Output
+
+```text
+true
+```
+
+because string literals come from the String Pool.
+
+---
+
+# Supplier May Return New Objects
+
+Example
+
+```java
+Supplier<String> supplier =
+        () -> new String("Hello");
+```
+
+Execution
+
+```java
+String a = supplier.get();
+String b = supplier.get();
+```
+
+Result
+
+```java
+a == b
+```
+
+Output
+
+```text
+false
+```
+
+Each call creates a new object.
+
+Supplier itself does **not** guarantee whether it returns the same object or a new one.
+
+That depends entirely on the implementation.
+
+---
+
+# Variable Capture
+
+Example
+
+```java
+String message = "Hello";
+
+Supplier<String> supplier =
+        () -> message;
+```
+
+This compiles because `message` is **effectively final**.
+
+---
+
+Attempting to modify the variable later
+
+```java
+message = "Hi";
+```
+
+causes a compile-time error.
+
+```
+Local variable message defined in an enclosing scope
+must be final or effectively final
+```
+
+---
+
+# Why Effectively Final?
+
+Local variables live on the **stack**.
+
+Lambda objects live on the **heap**.
+
+When a lambda captures a local variable,
+
+it captures the **value of the reference**, not the stack variable itself.
+
+Conceptually
+
+```java
+class GeneratedSupplier
+        implements Supplier<String> {
+
+    private final String capturedValue;
+
+    GeneratedSupplier(String value) {
+        this.capturedValue = value;
+    }
+
+    @Override
+    public String get() {
+        return capturedValue;
+    }
+
+}
+```
+
+Therefore,
+
+the captured local variable cannot later be reassigned.
+
+---
+
+# Capturing Object References
+
+Example
+
+```java
+Employee employee =
+        new Employee("John");
+
+Supplier<Employee> supplier =
+        () -> employee;
+```
+
+This captures the **reference**.
+
+Modifying the object is allowed.
+
+```java
+employee.setName("Alice");
+```
+
+Execution
+
+```java
+supplier.get().getName();
+```
+
+Output
+
+```text
+Alice
+```
+
+Changing the reference itself
+
+```java
+employee =
+        new Employee("Bob");
+```
+
+causes a compile-time error because the local variable is no longer effectively final.
+
+---
+
+# Supplier in Stream API
+
+The most common Stream usage.
+
+```java
+Stream.generate(Math::random)
+      .limit(5)
+      .forEach(System.out::println);
+```
+
+Question
+
+What is
+
+```java
+Math::random
+```
+
+Answer
+
+```java
+Supplier<Double>
+```
+
+because
+
+```java
+Stream.generate()
+```
+
+expects
+
+```java
+Supplier<? extends T>
+```
+
+Method Signature
+
+```java
+static <T> Stream<T> generate(
+        Supplier<? extends T> supplier
+)
+```
+
+---
+
+# Supplier vs Function
+
+| Supplier         | Function                   |
+| ---------------- | -------------------------- |
+| No input         | One input                  |
+| Produces output  | Transforms input to output |
+| Method = `get()` | Method = `apply()`         |
+
+Example
+
+Supplier
+
+```java
+() -> new Employee()
+```
+
+Function
+
+```java
+employee ->
+employee.getSalary()
+```
+
+---
+
+# Supplier vs Consumer
+
+| Supplier        | Consumer       |
+| --------------- | -------------- |
+| Produces data   | Consumes data  |
+| No input        | Requires input |
+| Returns a value | Returns `void` |
+
+Supplier
+
+```java
+() -> UUID.randomUUID()
+```
+
+Consumer
+
+```java
+employee ->
+System.out.println(employee);
+```
+
+---
+
+# Supplier vs Predicate
+
+| Supplier         | Predicate             |
+| ---------------- | --------------------- |
+| Produces a value | Evaluates a condition |
+| No input         | Requires input        |
+| Returns any type | Returns boolean       |
+
+---
+
+# Side Effects
+
+A Supplier is often implemented as a pure function.
+
+```java
+Supplier<String> message =
+        () -> "Hello";
+```
+
+However,
+
+Java allows side effects.
+
+Example
+
+```java
+Supplier<Employee> supplier = () -> {
+
+    logger.info("Creating Employee");
+
+    return new Employee();
+
+};
+```
+
+This compiles successfully.
+
+Java validates only the method signature.
+
+It does not enforce functional purity.
+
+---
+
+# JVM Perspective
+
+Example
+
+```java
+Supplier<Employee> supplier =
+        Employee::new;
+```
+
+Compilation Flow
+
+```text
+Lambda / Method Reference
+        │
+        ▼
+Target Functional Interface
+(Supplier<Employee>)
+        │
+        ▼
+Locate Abstract Method
+
+T get()
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+        │
+        ▼
+Method Becomes
+
+Employee get()
+        │
+        ▼
+Compiler Generates invokedynamic
+        │
+        ▼
+LambdaMetafactory
+        │
+        ▼
+Supplier Object
+```
+
+---
+
+# Real-World Uses
+
+Supplier is heavily used for
+
+* Object Creation
+* Factory Methods
+* Lazy Initialization
+* UUID Generation
+* Configuration Retrieval
+* Current Time
+* Random Values
+* Stream Generation
+* Dependency Injection
+* Optional Default Values
+
+Examples
+
+```java
+Supplier<UUID> uuid =
+        UUID::randomUUID;
+```
+
+```java
+Supplier<LocalDateTime> now =
+        LocalDateTime::now;
+```
+
+```java
+Supplier<List<String>> listFactory =
+        ArrayList::new;
+```
+
+---
+
+# Advantages
+
+* Represents value creation clearly
+* Supports lazy initialization
+* Eliminates unnecessary object creation
+* Integrates naturally with Stream API
+* Encourages reusable factories
+* Provides compile-time type safety
+
+---
+
+# Limitations
+
+* Accepts no input
+* Produces only one value
+* May create unnecessary objects if used incorrectly
+* Does not guarantee whether a new or existing object is returned
+
+---
+
+# Frequently Asked Interview Questions
+
+### What is `Supplier<T>`?
+
+A Functional Interface that accepts no input and supplies a value.
+
+---
+
+### What is the abstract method?
+
+```java
+T get();
+```
+
+---
+
+### Why does Supplier have only one generic parameter?
+
+Because it has no input parameter.
+
+The generic type represents only the return type.
+
+---
+
+### Why write `Supplier<Employee>` instead of `Supplier`?
+
+The generic parameter allows the compiler to infer
+
+```java
+Employee get();
+```
+
+Without generics,
+
+the raw type becomes
+
+```java
+Object get();
+```
+
+which loses compile-time type safety.
+
+---
+
+### Which Stream method accepts Supplier?
+
+```java
+Stream.generate()
+```
+
+---
+
+### Can a Supplier have side effects?
+
+Yes.
+
+Java allows side effects.
+
+However,
+
+Suppliers are generally used to provide values or create objects.
+
+---
+
+### What is Lazy Evaluation?
+
+Creating or computing a value only when `get()` is called rather than immediately.
+
+---
+
+### Why must captured local variables be effectively final?
+
+Because lambdas capture the **value of the reference** into the generated lambda object.
+
+Reassigning the local variable would create ambiguity, so Java requires captured local variables to be final or effectively final.
+
+---
+
+### Does a Supplier always create a new object?
+
+No.
+
+A Supplier may
+
+* return the same object,
+* return a cached object,
+* or create a new object.
+
+The behavior depends entirely on its implementation.
+
+---
+
+# Key Takeaways
+
+* `Supplier<T>` represents a **producer** of values.
+* It contains one abstract method: `T get()`.
+* It accepts **no input** and returns **one output**.
+* The generic parameter (`T`) determines the return type.
+* `Supplier` is ideal for object creation, lazy initialization, and factory methods.
+* Captured local variables inside lambdas must be **final or effectively final** because lambdas capture the **reference value**, not the stack variable itself.
+* `Stream.generate()` is the primary Stream API method that accepts a `Supplier`.
+* `Supplier` does not guarantee whether it returns a new object or an existing one; that behavior depends on the implementation.
