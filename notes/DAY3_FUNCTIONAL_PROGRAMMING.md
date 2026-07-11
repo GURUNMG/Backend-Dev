@@ -704,3 +704,832 @@ At runtime, the JVM uses `LambdaMetafactory` to generate an implementation of th
 * `this` inside a Lambda refers to the enclosing object.
 * Modern Lambdas are implemented using `invokedynamic` and `LambdaMetafactory`, not anonymous inner classes.
 * Lambdas are the foundation of Functional Programming in Java and enable APIs such as Streams, Optional, and CompletableFuture.
+
+# Day 3 – Functional Programming
+
+## Chapter 2 – Functional Interfaces (Interview Notes)
+
+> **Topics Covered**
+>
+> * What is a Functional Interface?
+> * Why Functional Interfaces were introduced
+> * Single Abstract Method (SAM)
+> * Target Typing
+> * `@FunctionalInterface`
+> * Default, Static, and Private Methods
+> * Inheritance Rules
+> * Generic Functional Interfaces
+> * JVM Perspective
+> * Common Interview Questions
+
+---
+
+# Overview
+
+A **Functional Interface** is the foundation of Functional Programming in Java.
+
+Lambda Expressions and Method References **cannot exist independently**. They require a Functional Interface to provide a target type.
+
+A Functional Interface defines **exactly one abstract method**, allowing the compiler to determine which method a Lambda Expression is implementing.
+
+---
+
+# Why Were Functional Interfaces Introduced?
+
+A Lambda Expression only contains an implementation.
+
+Example
+
+```java
+(a, b) -> a + b
+```
+
+Notice that it does **not** specify:
+
+* Method name
+* Interface name
+* Return type explicitly
+
+Suppose Java had these interfaces:
+
+```java
+interface Calculator {
+
+    int add(int a, int b);
+
+}
+```
+
+```java
+interface Operation {
+
+    int execute(int a, int b);
+
+}
+```
+
+```java
+interface Sum {
+
+    int calculate(int a, int b);
+
+}
+```
+
+Question:
+
+Which method should the Lambda implement?
+
+The compiler has no way to determine this.
+
+Therefore Java requires every Lambda Expression to target a **Functional Interface**.
+
+---
+
+# Definition
+
+A Functional Interface is
+
+> **An interface that contains exactly one abstract method.**
+
+Example
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+}
+```
+
+Valid Lambda
+
+```java
+Printer printer =
+        message -> System.out.println(message);
+```
+
+The Lambda implements
+
+```java
+print()
+```
+
+---
+
+# Single Abstract Method (SAM)
+
+A Functional Interface is also known as a
+
+> **SAM Interface**
+
+SAM stands for
+
+> **Single Abstract Method**
+
+Examples
+
+```java
+Runnable
+```
+
+Contains
+
+```java
+void run();
+```
+
+---
+
+```java
+Comparator<T>
+```
+
+Contains
+
+```java
+int compare(T o1, T o2);
+```
+
+---
+
+```java
+Callable<T>
+```
+
+Contains
+
+```java
+T call();
+```
+
+---
+
+```java
+Consumer<T>
+```
+
+Contains
+
+```java
+void accept(T t);
+```
+
+All are Functional Interfaces because each contains only one abstract method.
+
+---
+
+# Why Exactly One Abstract Method?
+
+Consider
+
+```java
+interface Operations {
+
+    int add(int a, int b);
+
+    String format(String name);
+
+}
+```
+
+Now write
+
+```java
+Operations op =
+        (a, b) -> a + b;
+```
+
+Compilation fails.
+
+Compiler Error (conceptually)
+
+```text
+Operations is not a functional interface
+multiple non-overriding abstract methods found
+```
+
+Although the Lambda appears to match
+
+```java
+add(int, int)
+```
+
+the compiler **does not attempt to guess**.
+
+It first checks
+
+> "Is the target interface a Functional Interface?"
+
+Since the answer is **No**, compilation stops immediately.
+
+---
+
+# Another Example
+
+```java
+interface Demo {
+
+    void show();
+
+    int calculate(int value);
+
+}
+```
+
+Lambda
+
+```java
+Demo demo =
+        () -> System.out.println("Hello");
+```
+
+Compilation Error
+
+Reason:
+
+Two abstract methods exist.
+
+The compiler cannot determine which one should be implemented.
+
+---
+
+# Method Overloading Does Not Help
+
+```java
+interface Printer {
+
+    void print(String message);
+
+    void print(int number);
+
+}
+```
+
+Lambda
+
+```java
+Printer p =
+        value -> System.out.println(value);
+```
+
+Compilation fails.
+
+Even though parameter types are different,
+
+the interface still contains **two abstract methods**.
+
+Therefore it is **not** a Functional Interface.
+
+---
+
+# Target Typing
+
+The compiler determines the Lambda's target from the left-hand side.
+
+Example
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+}
+```
+
+```java
+Printer printer =
+        message -> System.out.println(message);
+```
+
+Compiler Steps
+
+```text
+Lambda Expression
+        │
+        ▼
+Target Type
+(Printer)
+        │
+        ▼
+Verify Functional Interface
+        │
+        ▼
+Exactly One Abstract Method
+        │
+        ▼
+Bind Lambda to print()
+        │
+        ▼
+Validate Parameters
+        │
+        ▼
+Compilation Successful
+```
+
+---
+
+# Target Typing with Multiple Abstract Methods
+
+Example
+
+```java
+interface Printer {
+
+    void print(String message);
+
+    void display(String message);
+
+}
+```
+
+Compiler Steps
+
+```text
+Target Type
+        │
+        ▼
+Printer
+        │
+        ▼
+Abstract Methods = 2
+        │
+        ▼
+Not a Functional Interface
+        │
+        ▼
+Compilation Error
+```
+
+The compiler never attempts to compare the Lambda with individual methods.
+
+---
+
+# @FunctionalInterface Annotation
+
+Java provides
+
+```java
+@FunctionalInterface
+```
+
+Example
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+}
+```
+
+The annotation is
+
+**optional**.
+
+This also works
+
+```java
+interface Printer {
+
+    void print(String message);
+
+}
+```
+
+---
+
+# Why Use @FunctionalInterface?
+
+Suppose today
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+}
+```
+
+Later another developer adds
+
+```java
+void display();
+```
+
+Now
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+    void display();
+
+}
+```
+
+Compilation fails immediately.
+
+Without the annotation,
+
+the interface would silently stop being functional.
+
+The annotation provides compile-time safety.
+
+---
+
+# Default Methods
+
+A Functional Interface may contain multiple default methods.
+
+Example
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+    default void log() {
+
+        System.out.println("Logging");
+
+    }
+
+}
+```
+
+Still a Functional Interface.
+
+Reason:
+
+Only
+
+```java
+print()
+```
+
+is abstract.
+
+---
+
+# Static Methods
+
+Example
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+    static void display() {
+
+        System.out.println("Display");
+
+    }
+
+}
+```
+
+Still functional.
+
+Static methods do not count as abstract methods.
+
+---
+
+# Private Methods (Java 9)
+
+Interfaces may contain private methods.
+
+Example
+
+```java
+@FunctionalInterface
+interface Printer {
+
+    void print(String message);
+
+    private void helper() {
+
+    }
+
+}
+```
+
+Still functional.
+
+Private methods are implementation details.
+
+---
+
+# Methods Inherited from Object
+
+Example
+
+```java
+@FunctionalInterface
+interface Demo {
+
+    void execute();
+
+    String toString();
+
+}
+```
+
+Still a Functional Interface.
+
+Reason
+
+Methods matching public methods of `Object`, such as
+
+* `toString()`
+* `equals(Object)`
+* `hashCode()`
+
+are ignored when determining whether an interface is functional.
+
+---
+
+# Functional Interface Inheritance
+
+Example
+
+```java
+interface Animal {
+
+    void eat();
+
+}
+```
+
+```java
+@FunctionalInterface
+interface Dog extends Animal {
+
+}
+```
+
+Still functional.
+
+Only one abstract method exists.
+
+---
+
+Now
+
+```java
+interface Animal {
+
+    void eat();
+
+}
+```
+
+```java
+interface Pet {
+
+    void play();
+
+}
+```
+
+```java
+interface Dog extends Animal, Pet {
+
+}
+```
+
+Now
+
+```java
+eat()
+
+play()
+```
+
+Two abstract methods exist.
+
+Not a Functional Interface.
+
+---
+
+# Generic Functional Interfaces
+
+Example
+
+```java
+@FunctionalInterface
+interface Operation<T> {
+
+    T operate(T a, T b);
+
+}
+```
+
+Usage
+
+```java
+Operation<Integer> add =
+        (a, b) -> a + b;
+```
+
+Another example
+
+```java
+Operation<String> join =
+        (a, b) -> a + b;
+```
+
+The same interface works for multiple data types.
+
+---
+
+# Built-in Functional Interfaces
+
+Java provides many Functional Interfaces in
+
+```java
+java.util.function
+```
+
+Common examples
+
+| Interface           | Abstract Method       | Purpose                                     |
+| ------------------- | --------------------- | ------------------------------------------- |
+| `Predicate<T>`      | `boolean test(T t)`   | Returns a boolean result                    |
+| `Function<T,R>`     | `R apply(T t)`        | Transforms one value into another           |
+| `Consumer<T>`       | `void accept(T t)`    | Consumes a value without returning anything |
+| `Supplier<T>`       | `T get()`             | Produces a value                            |
+| `UnaryOperator<T>`  | `T apply(T t)`        | Operates on one value of the same type      |
+| `BinaryOperator<T>` | `T apply(T t1, T t2)` | Operates on two values of the same type     |
+
+These are heavily used by the Stream API.
+
+---
+
+# JVM Perspective
+
+Example
+
+```java
+Runnable runnable =
+        () -> System.out.println("Hello");
+```
+
+Compilation Flow
+
+```text
+Lambda Expression
+        │
+        ▼
+Target Functional Interface
+        │
+        ▼
+Verify Exactly One Abstract Method
+        │
+        ▼
+Compiler Generates invokedynamic
+        │
+        ▼
+LambdaMetafactory
+        │
+        ▼
+Creates Runnable Implementation
+        │
+        ▼
+Runnable Object
+```
+
+Without a Functional Interface,
+
+the compiler cannot determine which method the Lambda should implement.
+
+---
+
+# Advantages
+
+* Enables Lambda Expressions
+* Enables Method References
+* Foundation of Stream API
+* Reduces boilerplate code
+* Encourages Functional Programming
+* Improves code readability
+* Allows behavior to be passed as data
+
+---
+
+# Limitations
+
+* Must contain exactly one abstract method
+* Cannot target interfaces with multiple abstract methods
+* Lambdas cannot determine which method to implement without a Functional Interface
+
+---
+
+# Frequently Asked Interview Questions
+
+### What is a Functional Interface?
+
+An interface that contains exactly one abstract method and serves as the target type for Lambda Expressions and Method References.
+
+---
+
+### What is a SAM Interface?
+
+SAM stands for **Single Abstract Method**.
+
+A Functional Interface is also called a SAM Interface.
+
+---
+
+### Why does a Lambda require a Functional Interface?
+
+A Lambda provides only an implementation.
+
+The Functional Interface tells the compiler **which single abstract method** the Lambda should implement.
+
+---
+
+### Is `@FunctionalInterface` mandatory?
+
+No.
+
+It is optional but recommended because it provides compile-time validation.
+
+---
+
+### Can a Functional Interface have default methods?
+
+Yes.
+
+Default methods are already implemented and do not count as abstract methods.
+
+---
+
+### Can a Functional Interface have static methods?
+
+Yes.
+
+Static methods do not affect the Functional Interface rule.
+
+---
+
+### Can a Functional Interface have private methods?
+
+Yes.
+
+Since Java 9, private methods are allowed in interfaces and do not count as abstract methods.
+
+---
+
+### Can a Functional Interface extend another interface?
+
+Yes.
+
+As long as the resulting interface still has exactly one abstract method.
+
+---
+
+### Are methods inherited from `Object` counted?
+
+No.
+
+Methods such as `toString()`, `equals(Object)`, and `hashCode()` are ignored when determining whether an interface is functional.
+
+---
+
+### What happens if an interface has two abstract methods?
+
+The compiler reports that the interface is **not a Functional Interface**, and no Lambda Expression can target it.
+
+---
+
+### How does the compiler resolve a Lambda?
+
+1. Determine the target interface.
+2. Verify it is a Functional Interface.
+3. Locate the single abstract method.
+4. Bind the Lambda to that method.
+5. Validate parameter and return types.
+6. Generate `invokedynamic` for runtime implementation.
+
+---
+
+# Key Takeaways
+
+* A Functional Interface contains exactly **one abstract method**.
+* It is also called a **SAM (Single Abstract Method) Interface**.
+* Lambdas require a Functional Interface because they only provide an implementation, not a method name.
+* The compiler first verifies that the target interface is functional before attempting to bind the Lambda.
+* Default, static, private, and `Object` methods do **not** count toward the single abstract method rule.
+* `@FunctionalInterface` is optional but provides valuable compile-time protection.
+* Functional Interfaces are the backbone of Lambdas, Method References, Streams, and the entire `java.util.function` package.
+
