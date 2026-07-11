@@ -2,6 +2,7 @@ package learnings.fun_interface;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,10 @@ public class Main {
 
         List<Student> filtered = students.stream().filter(combined).toList();
         System.out.println(filtered.get(0).name);
+
+        Function<Student, String> studenName = student -> student.name;
+        System.out.println(students.stream().map(studenName).toList());
+        System.out.println(students.stream().map(Student :: getName).collect(Collectors.toList()));
 
     }
 }

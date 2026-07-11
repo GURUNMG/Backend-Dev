@@ -2394,3 +2394,1016 @@ A Java 11 static method that returns the logical negation of an existing Predica
 * `Stream.filter()` is the most common consumer of a `Predicate`.
 * Predicates should ideally be reusable, composable, and free of side effects.
 * `Predicate` is one of the core building blocks of Java's Functional Programming model.
+
+# Day 3 – Functional Programming
+
+## Chapter 4 – Function<T, R> (Interview Notes)
+
+> **Topics Covered**
+>
+> * Why `Function` was introduced
+> * What is `Function<T, R>`?
+> * Generic Types (`T` and `R`)
+> * `apply()` Method
+> * Target Typing
+> * Function Composition (`andThen`, `compose`)
+> * `identity()` Method
+> * Stream API Integration
+> * Interview Questions
+
+---
+
+# Overview
+
+`Function<T, R>` is one of the core Functional Interfaces provided by Java.
+
+It represents a **transformation**.
+
+A Function accepts **one input** and returns **one output**.
+
+Unlike `Predicate`, which returns only a boolean, `Function` can return **any type**.
+
+It is primarily used for:
+
+* Data Transformation
+* Mapping
+* DTO Conversion
+* Value Extraction
+* Formatting
+* Stream Processing
+
+---
+
+# Why Was Function Introduced?
+
+Suppose we have a list of employees.
+
+```java
+Employee("John", 50000)
+Employee("Alice", 70000)
+Employee("Bob", 30000)
+```
+
+Now suppose we need
+
+* Employee → Name
+* Employee → Salary
+* Employee → Department
+* Employee → Email
+
+Traditional approach
+
+```java
+List<String> names = new ArrayList<>();
+
+for (Employee employee : employees) {
+
+    names.add(employee.getName());
+
+}
+```
+
+Tomorrow
+
+Need salaries.
+
+```java
+List<Double> salaries = new ArrayList<>();
+
+for (Employee employee : employees) {
+
+    salaries.add(employee.getSalary());
+
+}
+```
+
+Again,
+
+Need emails.
+
+Again,
+
+Need departments.
+
+Notice
+
+The loop never changes.
+
+Only the transformation changes.
+
+Java extracted this transformation into a Functional Interface called **Function**.
+
+---
+
+# Definition
+
+`Function<T, R>` is a Functional Interface.
+
+```java
+@FunctionalInterface
+public interface Function<T, R> {
+
+    R apply(T t);
+
+}
+```
+
+It contains exactly one abstract method.
+
+```java
+R apply(T t);
+```
+
+Meaning
+
+> Accept an object of type `T` and transform it into an object of type `R`.
+
+---
+
+# Understanding Generic Types
+
+Unlike Predicate,
+
+Function contains **two generic parameters**.
+
+```text
+Function<T, R>
+
+T → Input Type
+
+R → Result (Return Type)
+```
+
+Visual Representation
+
+```text
+Input (T)
+     │
+     ▼
+ Function
+     │
+     ▼
+Output (R)
+```
+
+---
+
+# Generic Type Examples
+
+Example
+
+```java
+Function<Integer, String>
+```
+
+Compiler substitutes
+
+```java
+String apply(Integer number);
+```
+
+Meaning
+
+```text
+Integer
+
+↓
+
+String
+```
+
+---
+
+Example
+
+```java
+Function<Employee, String>
+```
+
+becomes
+
+```java
+String apply(Employee employee);
+```
+
+---
+
+Example
+
+```java
+Function<Employee, Double>
+```
+
+becomes
+
+```java
+Double apply(Employee employee);
+```
+
+---
+
+Example
+
+```java
+Function<String, Integer>
+```
+
+becomes
+
+```java
+Integer apply(String value);
+```
+
+---
+
+# Basic Example
+
+```java
+Function<Integer, Integer> square =
+        number -> number * number;
+```
+
+Execution
+
+```java
+square.apply(5);
+```
+
+Output
+
+```text
+25
+```
+
+---
+
+# String Example
+
+```java
+Function<String, Integer> length =
+        text -> text.length();
+```
+
+Execution
+
+```java
+length.apply("Java");
+```
+
+Output
+
+```text
+4
+```
+
+Input
+
+String
+
+Output
+
+Integer
+
+---
+
+# Employee Example
+
+```java
+Function<Employee, String> getName =
+        employee -> employee.getName();
+```
+
+Execution
+
+```java
+getName.apply(employee);
+```
+
+Output
+
+```text
+John
+```
+
+---
+
+Salary Example
+
+```java
+Function<Employee, Double> getSalary =
+        Employee::getSalary;
+```
+
+Execution
+
+```java
+getSalary.apply(employee);
+```
+
+Output
+
+```text
+70000.0
+```
+
+The same Employee object can be transformed into different values.
+
+---
+
+# Why Function Has Two Generic Types
+
+Predicate
+
+```java
+Predicate<Employee>
+```
+
+always returns
+
+```text
+boolean
+```
+
+Therefore only one generic parameter is required.
+
+Function is different.
+
+Input
+
+↓
+
+Output can be
+
+* String
+* Integer
+* Double
+* Address
+* DTO
+* Any Object
+
+Therefore
+
+```java
+Function<T, R>
+```
+
+requires
+
+* one generic type for the input
+* one generic type for the output
+
+---
+
+# Target Typing
+
+Example
+
+```java
+Function<Employee, String> getName =
+        employee -> employee.getName();
+```
+
+Compiler Steps
+
+```text
+Function<Employee, String>
+        │
+        ▼
+Target Functional Interface
+        │
+        ▼
+Locate Abstract Method
+
+R apply(T)
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+
+R = String
+        │
+        ▼
+Method Becomes
+
+String apply(Employee employee)
+        │
+        ▼
+Lambda Parameter Type Inferred
+        │
+        ▼
+Compilation Successful
+```
+
+---
+
+# Why Function<Employee, String> Instead of Function?
+
+Example
+
+```java
+Function<Employee, String> getName =
+        employee -> employee.getName();
+```
+
+Compiler sees
+
+```java
+String apply(Employee employee);
+```
+
+Therefore
+
+```java
+employee.getName();
+```
+
+is valid.
+
+---
+
+Now consider
+
+```java
+Function getName =
+        employee -> employee.getName();
+```
+
+Here,
+
+`Function` becomes a **raw type**.
+
+Compiler treats it as
+
+```java
+Object apply(Object employee);
+```
+
+Now
+
+```java
+employee.getName();
+```
+
+fails.
+
+Reason
+
+`Object` does not contain
+
+```java
+getName()
+```
+
+The generic type provides compile-time type safety.
+
+---
+
+# Raw Type vs Generic Type
+
+| Generic Function             | Raw Function              |
+| ---------------------------- | ------------------------- |
+| `Function<Employee, String>` | `Function`                |
+| `String apply(Employee)`     | `Object apply(Object)`    |
+| Type-safe                    | Not type-safe             |
+| No casting required          | Casting required          |
+| Compile-time checking        | Loses generic information |
+
+---
+
+# Reusable Functions
+
+Instead of repeatedly extracting values,
+
+create reusable Functions.
+
+```java
+Function<Employee, String> getName =
+        Employee::getName;
+
+Function<Employee, Double> getSalary =
+        Employee::getSalary;
+
+Function<Employee, String> getDepartment =
+        Employee::getDepartment;
+```
+
+These Functions can be reused throughout the application.
+
+---
+
+# Function Composition
+
+One of the strongest features of Function.
+
+Suppose
+
+```java
+Function<String, String> trim =
+        String::trim;
+```
+
+```java
+Function<String, Integer> length =
+        String::length;
+```
+
+Instead of writing
+
+```java
+text -> text.trim().length()
+```
+
+compose them.
+
+---
+
+# andThen()
+
+```java
+Function<String, Integer> result =
+        trim.andThen(length);
+```
+
+Execution
+
+```text
+Input
+
+↓
+
+trim()
+
+↓
+
+length()
+
+↓
+
+Output
+```
+
+Example
+
+```java
+result.apply("  Java  ");
+```
+
+Output
+
+```text
+4
+```
+
+---
+
+Another Example
+
+```java
+Function<Integer, Integer> multiply =
+        number -> number * 2;
+
+Function<Integer, Integer> add =
+        number -> number + 5;
+
+Function<Integer, Integer> result =
+        multiply.andThen(add);
+```
+
+Execution
+
+```text
+10
+
+↓
+
+20
+
+↓
+
+25
+```
+
+Output
+
+```text
+25
+```
+
+---
+
+# compose()
+
+Performs the reverse order.
+
+```java
+Function<Integer, Integer> result =
+        multiply.compose(add);
+```
+
+Execution
+
+```text
+10
+
+↓
+
+15
+
+↓
+
+30
+```
+
+Output
+
+```text
+30
+```
+
+---
+
+# compose() vs andThen()
+
+| compose()                        | andThen()                       |
+| -------------------------------- | ------------------------------- |
+| Executes supplied Function first | Executes current Function first |
+| Reverse order                    | Natural order                   |
+
+Example
+
+```text
+compose()
+
+Input
+ ↓
+add()
+ ↓
+multiply()
+```
+
+```text
+andThen()
+
+Input
+ ↓
+multiply()
+ ↓
+add()
+```
+
+---
+
+# identity()
+
+Function provides a static method
+
+```java
+Function.identity();
+```
+
+Example
+
+```java
+Function<String, String> identity =
+        Function.identity();
+```
+
+Execution
+
+```java
+identity.apply("Java");
+```
+
+Output
+
+```text
+Java
+```
+
+Equivalent to
+
+```java
+value -> value
+```
+
+No transformation occurs.
+
+---
+
+# Function in Stream API
+
+The most common real-world usage.
+
+```java
+employees.stream()
+         .map(Employee::getName)
+         .toList();
+```
+
+Question
+
+What is
+
+```java
+Employee::getName
+```
+
+Answer
+
+```java
+Function<Employee, String>
+```
+
+because
+
+```java
+map()
+```
+
+expects
+
+```java
+Function<? super T, ? extends R>
+```
+
+Method Signature
+
+```java
+<R> Stream<R> map(
+        Function<? super T, ? extends R> mapper
+)
+```
+
+---
+
+# Function vs Predicate
+
+| Function                | Predicate          |
+| ----------------------- | ------------------ |
+| Returns any type        | Returns boolean    |
+| Used for transformation | Used for filtering |
+| Method = `apply()`      | Method = `test()`  |
+
+Predicate
+
+```java
+employee ->
+employee.getSalary() > 50000
+```
+
+Function
+
+```java
+employee ->
+employee.getSalary()
+```
+
+---
+
+# Function vs Consumer
+
+| Function        | Consumer           |
+| --------------- | ------------------ |
+| Returns a value | Returns nothing    |
+| Transformation  | Performs an action |
+| `apply()`       | `accept()`         |
+
+Example
+
+Function
+
+```java
+employee ->
+employee.getSalary()
+```
+
+Consumer
+
+```java
+employee ->
+System.out.println(employee)
+```
+
+---
+
+# Function vs Supplier
+
+| Function                   | Supplier                      |
+| -------------------------- | ----------------------------- |
+| Requires input             | No input                      |
+| Produces output from input | Produces output without input |
+
+Example
+
+Function
+
+```text
+Employee
+
+↓
+
+Salary
+```
+
+Supplier
+
+```text
+↓
+
+Creates Employee
+```
+
+---
+
+# JVM Perspective
+
+Example
+
+```java
+Function<Employee, String> getName =
+        Employee::getName;
+```
+
+Compilation Flow
+
+```text
+Lambda / Method Reference
+        │
+        ▼
+Target Functional Interface
+(Function<Employee, String>)
+        │
+        ▼
+Locate Abstract Method
+
+R apply(T)
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+
+R = String
+        │
+        ▼
+Method Becomes
+
+String apply(Employee)
+        │
+        ▼
+Compiler Generates invokedynamic
+        │
+        ▼
+LambdaMetafactory
+        │
+        ▼
+Function Object
+```
+
+---
+
+# Real-World Uses
+
+`Function` is heavily used in
+
+* Stream API (`map()`)
+* DTO Mapping
+* Entity → DTO Conversion
+* JSON Transformation
+* Formatting
+* Data Extraction
+* Cache Value Conversion
+* Business Object Transformation
+
+Example
+
+```java
+Function<User, UserDTO> mapper =
+        user -> new UserDTO(
+                user.getId(),
+                user.getName()
+        );
+```
+
+---
+
+# Advantages
+
+* Encourages reusable transformations
+* Eliminates duplicate mapping logic
+* Improves readability
+* Supports Function composition
+* Integrates naturally with Stream API
+* Promotes declarative programming
+
+---
+
+# Limitations
+
+* Accepts only one input parameter
+* Complex transformations may require chaining multiple Functions
+* Should ideally avoid side effects
+
+---
+
+# Frequently Asked Interview Questions
+
+### What is `Function<T, R>`?
+
+A Functional Interface that accepts one input and returns one output.
+
+---
+
+### What is the abstract method?
+
+```java
+R apply(T t);
+```
+
+---
+
+### Why does Function have two generic types?
+
+`T` represents the input type.
+
+`R` represents the return type.
+
+Unlike `Predicate`, the return type is not fixed.
+
+---
+
+### Why write `Function<Employee, String>` instead of `Function`?
+
+The generic parameters allow the compiler to infer:
+
+```java
+String apply(Employee employee);
+```
+
+Without generics,
+
+the raw type becomes
+
+```java
+Object apply(Object employee);
+```
+
+which loses compile-time type safety.
+
+---
+
+### Difference between Predicate and Function?
+
+Predicate evaluates a condition and returns a boolean.
+
+Function transforms one value into another.
+
+---
+
+### Difference between Function and Consumer?
+
+Function returns a value.
+
+Consumer performs an action and returns nothing.
+
+---
+
+### Difference between compose() and andThen()?
+
+`compose()` executes the supplied Function first.
+
+`andThen()` executes the current Function first.
+
+---
+
+### What does `Function.identity()` return?
+
+A Function that returns its input unchanged.
+
+Equivalent to
+
+```java
+value -> value
+```
+
+---
+
+### Which Stream method accepts Function?
+
+```java
+map()
+```
+
+---
+
+# Key Takeaways
+
+* `Function<T, R>` represents a **transformation** from one type to another.
+* It contains one abstract method: `R apply(T t)`.
+* `T` is the input type, and `R` is the result type.
+* Generic parameters enable compile-time type safety and lambda parameter inference.
+* Functions can be composed using `andThen()` and `compose()`.
+* `Function.identity()` returns the input unchanged.
+* `Stream.map()` is the most common consumer of a `Function`.
+* `Function` is heavily used in DTO mapping, data transformation, and modern Java applications.
