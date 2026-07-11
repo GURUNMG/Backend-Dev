@@ -2,6 +2,7 @@ package learnings.fun_interface;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,5 +32,8 @@ public class Main {
         System.out.println(students.stream().map(studenName).toList());
         System.out.println(students.stream().map(Student :: getName).collect(Collectors.toList()));
 
+        Consumer<Student> print= student -> System.out.println(student.department);
+        print.accept(s1);
+        print.accept(s2);
     }
 }

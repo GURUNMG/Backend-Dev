@@ -3407,3 +3407,820 @@ map()
 * `Function.identity()` returns the input unchanged.
 * `Stream.map()` is the most common consumer of a `Function`.
 * `Function` is heavily used in DTO mapping, data transformation, and modern Java applications.
+
+# Day 3 – Functional Programming
+
+## Chapter 5 – Consumer<T> (Interview Notes)
+
+> **Topics Covered**
+>
+> * Why `Consumer` was introduced
+> * What is `Consumer<T>`?
+> * Generic Type (`T`)
+> * `accept()` Method
+> * Target Typing
+> * Why `Consumer<Employee>` instead of `Consumer`
+> * Consumer Chaining (`andThen`)
+> * Side Effects
+> * Stream API Integration
+> * Interview Questions
+
+---
+
+# Overview
+
+`Consumer<T>` is one of the core Functional Interfaces provided by Java.
+
+It represents an **action**.
+
+A Consumer accepts **one input** and performs an operation **without returning a value**.
+
+Unlike `Predicate`, which evaluates a condition, or `Function`, which transforms data, a Consumer simply performs work.
+
+It is primarily used for:
+
+* Printing
+* Logging
+* Database Operations
+* Sending Emails
+* Notifications
+* Publishing Messages
+* Updating External Systems
+
+---
+
+# Why Was Consumer Introduced?
+
+Suppose we have a list of employees.
+
+```java
+Employee("John", 50000)
+Employee("Alice", 70000)
+Employee("Bob", 30000)
+```
+
+Now suppose we want to
+
+* Print each employee
+* Save each employee
+* Send an email to each employee
+* Log employee details
+* Publish employee events
+
+Notice
+
+We are not
+
+* filtering employees
+* transforming employees
+
+We are simply performing an action.
+
+Java introduced **Consumer** to represent this behavior.
+
+---
+
+# Definition
+
+`Consumer<T>` is a Functional Interface.
+
+```java
+@FunctionalInterface
+public interface Consumer<T> {
+
+    void accept(T t);
+
+}
+```
+
+It contains exactly one abstract method.
+
+```java
+void accept(T t);
+```
+
+Meaning
+
+> Accept an object of type `T` and perform an action without returning a value.
+
+---
+
+# Understanding Generic Type (T)
+
+Example
+
+```java
+Consumer<String>
+```
+
+Compiler substitutes
+
+```java
+void accept(String value);
+```
+
+---
+
+Example
+
+```java
+Consumer<Employee>
+```
+
+becomes
+
+```java
+void accept(Employee employee);
+```
+
+Unlike `Function`, Consumer requires only one generic parameter because its return type is always `void`.
+
+---
+
+# Basic Example
+
+```java
+Consumer<String> printer =
+        text -> System.out.println(text);
+```
+
+Execution
+
+```java
+printer.accept("Java");
+```
+
+Output
+
+```text
+Java
+```
+
+Nothing is returned.
+
+---
+
+# Integer Example
+
+```java
+Consumer<Integer> display =
+        number -> System.out.println(number);
+```
+
+Execution
+
+```java
+display.accept(100);
+```
+
+Output
+
+```text
+100
+```
+
+---
+
+# Employee Example
+
+```java
+Consumer<Employee> printEmployee =
+        employee -> System.out.println(employee);
+```
+
+Execution
+
+```java
+printEmployee.accept(employee);
+```
+
+Output
+
+```text
+Employee{name='John', salary=70000}
+```
+
+---
+
+# Consumer Performs Actions
+
+Typical Consumer implementations include
+
+```java
+employee -> logger.info(employee.toString())
+```
+
+```java
+employee -> employeeRepository.save(employee)
+```
+
+```java
+employee -> emailService.send(employee)
+```
+
+```java
+employee -> cache.put(employee.getId(), employee)
+```
+
+The object is consumed by performing some work.
+
+---
+
+# Target Typing
+
+Example
+
+```java
+Consumer<Employee> printer =
+        employee -> System.out.println(employee);
+```
+
+Compiler Steps
+
+```text
+Consumer<Employee>
+        │
+        ▼
+Target Functional Interface
+        │
+        ▼
+Locate Abstract Method
+
+void accept(T)
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+        │
+        ▼
+Method Becomes
+
+void accept(Employee employee)
+        │
+        ▼
+Lambda Parameter Type Inferred
+        │
+        ▼
+Compilation Successful
+```
+
+---
+
+# Why Consumer<Employee> Instead of Consumer?
+
+Example
+
+```java
+Consumer<Employee> consumer =
+        employee -> System.out.println(employee.getName());
+```
+
+Compiler sees
+
+```java
+void accept(Employee employee);
+```
+
+Therefore
+
+```java
+employee.getName();
+```
+
+is valid.
+
+---
+
+Now consider
+
+```java
+Consumer consumer =
+        employee -> System.out.println(employee.getName());
+```
+
+Here,
+
+`Consumer` becomes a **raw type**.
+
+Compiler treats it as
+
+```java
+void accept(Object employee);
+```
+
+Now
+
+```java
+employee.getName();
+```
+
+fails.
+
+Reason
+
+`Object` does not contain
+
+```java
+getName()
+```
+
+The generic type provides compile-time type safety.
+
+---
+
+# Raw Type vs Generic Type
+
+| Generic Consumer      | Raw Consumer              |
+| --------------------- | ------------------------- |
+| `Consumer<Employee>`  | `Consumer`                |
+| `accept(Employee)`    | `accept(Object)`          |
+| Type-safe             | Not type-safe             |
+| No casting required   | Casting required          |
+| Compile-time checking | Loses generic information |
+
+---
+
+# Reusable Consumers
+
+Instead of repeatedly writing actions,
+
+create reusable Consumers.
+
+```java
+Consumer<Employee> print =
+        System.out::println;
+
+Consumer<Employee> save =
+        employeeRepository::save;
+
+Consumer<Employee> sendMail =
+        emailService::send;
+```
+
+These Consumers can be reused throughout the application.
+
+---
+
+# Consumer Chaining
+
+Suppose
+
+```java
+Consumer<String> upper =
+        text -> System.out.println(text.toUpperCase());
+```
+
+```java
+Consumer<String> length =
+        text -> System.out.println(text.length());
+```
+
+Instead of
+
+```java
+upper.accept("Java");
+
+length.accept("Java");
+```
+
+Chain them
+
+```java
+Consumer<String> result =
+        upper.andThen(length);
+```
+
+Execution
+
+```java
+result.accept("Java");
+```
+
+Output
+
+```text
+JAVA
+4
+```
+
+---
+
+# Execution Order
+
+```text
+Input
+   │
+   ▼
+upper.accept()
+   │
+   ▼
+length.accept()
+```
+
+`andThen()` executes Consumers sequentially.
+
+---
+
+# Exception Behavior
+
+Suppose
+
+```java
+Consumer<String> first =
+        text -> {
+            throw new RuntimeException();
+        };
+```
+
+```java
+Consumer<String> second =
+        text -> System.out.println(text);
+```
+
+Now
+
+```java
+Consumer<String> combined =
+        first.andThen(second);
+```
+
+Execution
+
+```java
+combined.accept("Java");
+```
+
+Result
+
+* `first.accept()` executes
+* Exception is thrown
+* `second.accept()` is **not executed**
+
+---
+
+# Side Effects
+
+A **side effect** is any operation that modifies external state or interacts with the outside world.
+
+Examples
+
+* Printing to console
+* Saving to database
+* Writing to a file
+* Sending an email
+* Making an API call
+* Updating shared variables
+* Publishing Kafka messages
+
+Consumer is specifically designed for operations that produce side effects.
+
+Example
+
+```java
+Consumer<Employee> save =
+        employee -> employeeRepository.save(employee);
+```
+
+This is an appropriate use of Consumer.
+
+---
+
+# Function vs Consumer
+
+Although Java allows side effects inside a `Function`, it is generally discouraged.
+
+Example
+
+```java
+Function<Employee, Employee> save =
+        employee -> {
+
+            employeeRepository.save(employee);
+
+            return employee;
+        };
+```
+
+This compiles successfully.
+
+However,
+
+the Function now performs both
+
+* an action (saving)
+* a transformation (returning)
+
+A Consumer expresses the intent more clearly.
+
+```java
+Consumer<Employee> save =
+        employeeRepository::save;
+```
+
+---
+
+# Consumer in Stream API
+
+The most common real-world usage.
+
+```java
+employees.stream()
+         .forEach(System.out::println);
+```
+
+Question
+
+What is
+
+```java
+System.out::println
+```
+
+Answer
+
+```java
+Consumer<Employee>
+```
+
+because
+
+```java
+forEach()
+```
+
+expects
+
+```java
+Consumer<? super T>
+```
+
+Method Signature
+
+```java
+void forEach(
+        Consumer<? super T> action
+)
+```
+
+---
+
+# Consumer vs Predicate
+
+| Consumer            | Predicate             |
+| ------------------- | --------------------- |
+| Performs an action  | Evaluates a condition |
+| Returns `void`      | Returns `boolean`     |
+| Method = `accept()` | Method = `test()`     |
+
+Predicate answers
+
+> Should I keep this object?
+
+Consumer answers
+
+> What should I do with this object?
+
+---
+
+# Consumer vs Function
+
+| Consumer            | Function                  |
+| ------------------- | ------------------------- |
+| Performs an action  | Performs a transformation |
+| Returns `void`      | Returns any type          |
+| Method = `accept()` | Method = `apply()`        |
+
+Example
+
+Consumer
+
+```java
+employee ->
+System.out.println(employee);
+```
+
+Function
+
+```java
+employee ->
+employee.getSalary();
+```
+
+---
+
+# Consumer vs Supplier
+
+| Consumer               | Supplier              |
+| ---------------------- | --------------------- |
+| Consumes input         | Produces output       |
+| Requires one parameter | Requires no parameter |
+| Returns `void`         | Returns a value       |
+
+Example
+
+Consumer
+
+```java
+employee ->
+System.out.println(employee);
+```
+
+Supplier
+
+```java
+() ->
+new Employee();
+```
+
+---
+
+# JVM Perspective
+
+Example
+
+```java
+Consumer<Employee> printer =
+        System.out::println;
+```
+
+Compilation Flow
+
+```text
+Lambda / Method Reference
+        │
+        ▼
+Target Functional Interface
+(Consumer<Employee>)
+        │
+        ▼
+Locate Abstract Method
+
+void accept(T)
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+        │
+        ▼
+Method Becomes
+
+void accept(Employee)
+        │
+        ▼
+Compiler Generates invokedynamic
+        │
+        ▼
+LambdaMetafactory
+        │
+        ▼
+Consumer Object
+```
+
+---
+
+# Real-World Uses
+
+Consumer is commonly used in
+
+* Stream API (`forEach()`)
+* Logging
+* Database Persistence
+* Email Sending
+* Notification Services
+* Kafka Producers
+* RabbitMQ Publishers
+* Audit Logging
+* Metrics Collection
+* Cache Updates
+
+Example
+
+```java
+Consumer<Order> publishEvent =
+        kafkaProducer::send;
+```
+
+---
+
+# Advantages
+
+* Represents actions clearly
+* Encourages reusable operations
+* Integrates naturally with `forEach()`
+* Supports chaining using `andThen()`
+* Ideal for operations with side effects
+* Improves code readability
+
+---
+
+# Limitations
+
+* Returns no value
+* Accepts only one input parameter
+* Cannot directly transform data
+* Chained Consumers stop executing if an earlier Consumer throws an exception
+
+---
+
+# Frequently Asked Interview Questions
+
+### What is `Consumer<T>`?
+
+A Functional Interface that accepts one input and performs an action without returning a result.
+
+---
+
+### What is the abstract method?
+
+```java
+void accept(T t);
+```
+
+---
+
+### Why does Consumer have only one generic parameter?
+
+Because its return type is fixed as `void`.
+
+Only the input type needs to be specified.
+
+---
+
+### Why write `Consumer<Employee>` instead of `Consumer`?
+
+The generic parameter allows the compiler to infer
+
+```java
+void accept(Employee employee);
+```
+
+Without generics,
+
+the raw type becomes
+
+```java
+void accept(Object employee);
+```
+
+which loses compile-time type safety.
+
+---
+
+### Can a Consumer have side effects?
+
+Yes.
+
+Consumer is specifically designed for operations that produce side effects.
+
+---
+
+### Can a Function also have side effects?
+
+Yes.
+
+Java allows it.
+
+However,
+
+using a Consumer better communicates the intent when the primary goal is to perform an action.
+
+---
+
+### Which Stream method accepts Consumer?
+
+```java
+forEach()
+```
+
+---
+
+### How are Consumers chained?
+
+Using
+
+```java
+andThen()
+```
+
+which executes Consumers sequentially.
+
+---
+
+### What happens if the first Consumer throws an exception?
+
+Subsequent Consumers in the chain are not executed.
+
+---
+
+# Key Takeaways
+
+* `Consumer<T>` represents an **action** performed on an object.
+* It contains one abstract method: `void accept(T t)`.
+* Its return type is always `void`.
+* The generic parameter (`T`) determines the type of the lambda parameter.
+* Consumers are expected to produce **side effects**, such as logging, saving, or sending notifications.
+* `Consumer.andThen()` allows sequential execution of multiple Consumers.
+* `Stream.forEach()` is the most common consumer of a `Consumer`.
+* Use `Consumer` when the primary intent is to **perform work**, not to **compute** or **transform** a value.
