@@ -1533,3 +1533,864 @@ The compiler reports that the interface is **not a Functional Interface**, and n
 * `@FunctionalInterface` is optional but provides valuable compile-time protection.
 * Functional Interfaces are the backbone of Lambdas, Method References, Streams, and the entire `java.util.function` package.
 
+# Day 3 – Functional Programming
+
+## Chapter 3 – Predicate<T> (Interview Notes)
+
+> **Topics Covered**
+>
+> * Why `Predicate` was introduced
+> * What is `Predicate<T>`?
+> * Generic Type (`T`)
+> * `test()` Method
+> * Target Typing
+> * Why `Predicate<User>` instead of `Predicate`
+> * Predicate Chaining (`and`, `or`, `negate`)
+> * Static Methods (`isEqual`, `not`)
+> * Stream API Integration
+> * Interview Questions
+
+---
+
+# Overview
+
+`Predicate<T>` is one of the most commonly used Functional Interfaces in Java.
+
+It represents a **condition** or **boolean-valued function**.
+
+A Predicate accepts **one input** and returns either:
+
+* `true`
+* `false`
+
+It is primarily used for:
+
+* Filtering
+* Validation
+* Searching
+* Business Rules
+* Authorization
+* Conditional Processing
+
+---
+
+# Why Was Predicate Introduced?
+
+Suppose we have a list of employees.
+
+```java
+Employee("John", 50000)
+Employee("Alice", 70000)
+Employee("Bob", 30000)
+```
+
+We want employees whose salary is greater than 50,000.
+
+Traditional approach
+
+```java
+List<Employee> result = new ArrayList<>();
+
+for (Employee employee : employees) {
+
+    if (employee.getSalary() > 50000) {
+
+        result.add(employee);
+
+    }
+
+}
+```
+
+Tomorrow the requirement changes.
+
+Find
+
+* employees older than 30
+* employees from IT department
+* employees whose name starts with A
+
+Every time,
+
+only the **condition changes**.
+
+The loop remains exactly the same.
+
+Java introduced **Predicate** so that the condition can be passed as an object.
+
+---
+
+# Definition
+
+`Predicate<T>` is a Functional Interface.
+
+```java
+@FunctionalInterface
+public interface Predicate<T> {
+
+    boolean test(T t);
+
+}
+```
+
+It contains exactly one abstract method.
+
+```java
+boolean test(T t);
+```
+
+Meaning
+
+> Given an object of type `T`, return `true` or `false`.
+
+---
+
+# Understanding Generic Type (T)
+
+Example
+
+```java
+Predicate<Integer>
+```
+
+Compiler substitutes
+
+```java
+boolean test(Integer value);
+```
+
+---
+
+Example
+
+```java
+Predicate<String>
+```
+
+becomes
+
+```java
+boolean test(String value);
+```
+
+---
+
+Example
+
+```java
+Predicate<Employee>
+```
+
+becomes
+
+```java
+boolean test(Employee employee);
+```
+
+The generic type determines the type of the lambda parameter.
+
+---
+
+# Basic Example
+
+```java
+Predicate<Integer> isEven =
+        number -> number % 2 == 0;
+```
+
+Execution
+
+```java
+isEven.test(10);
+```
+
+Output
+
+```text
+true
+```
+
+Execution
+
+```java
+isEven.test(15);
+```
+
+Output
+
+```text
+false
+```
+
+---
+
+# String Example
+
+```java
+Predicate<String> isEmpty =
+        value -> value.isEmpty();
+```
+
+Execution
+
+```java
+isEmpty.test("");
+```
+
+Output
+
+```text
+true
+```
+
+Execution
+
+```java
+isEmpty.test("Java");
+```
+
+Output
+
+```text
+false
+```
+
+---
+
+# Employee Example
+
+```java
+Predicate<Employee> highSalary =
+        employee -> employee.getSalary() > 50000;
+```
+
+Execution
+
+```java
+Employee employee =
+        new Employee("John", 70000);
+
+highSalary.test(employee);
+```
+
+Output
+
+```text
+true
+```
+
+---
+
+# Target Typing
+
+Example
+
+```java
+Predicate<Employee> highSalary =
+        employee -> employee.getSalary() > 50000;
+```
+
+Compiler Steps
+
+```text
+Predicate<Employee>
+        │
+        ▼
+Target Functional Interface
+        │
+        ▼
+Abstract Method
+
+boolean test(T)
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+        │
+        ▼
+Method Becomes
+
+boolean test(Employee employee)
+        │
+        ▼
+Lambda Parameter Type Inferred
+        │
+        ▼
+Compilation Successful
+```
+
+---
+
+# Why `Predicate<Employee>` Instead of `Predicate`?
+
+Many interviewers ask this question.
+
+Example
+
+```java
+Predicate<Employee> predicate =
+        employee -> employee.getSalary() > 50000;
+```
+
+Compiler sees
+
+```java
+boolean test(Employee employee)
+```
+
+Therefore
+
+```java
+employee.getSalary()
+```
+
+is valid.
+
+---
+
+Now consider
+
+```java
+Predicate predicate =
+        employee -> employee.getSalary() > 50000;
+```
+
+Here,
+
+`Predicate` becomes a **raw type**.
+
+Compiler treats it as
+
+```java
+boolean test(Object employee)
+```
+
+Now the lambda parameter is an `Object`.
+
+Attempting
+
+```java
+employee.getSalary();
+```
+
+produces a compilation error.
+
+Reason
+
+`Object` does not contain
+
+```java
+getSalary()
+```
+
+---
+
+# Raw Type vs Generic Type
+
+| Generic Predicate     | Raw Predicate             |
+| --------------------- | ------------------------- |
+| `Predicate<Employee>` | `Predicate`               |
+| `test(Employee)`      | `test(Object)`            |
+| Type-safe             | Not type-safe             |
+| No casting required   | Casting required          |
+| Compile-time checking | Loses generic information |
+
+---
+
+# Reusable Predicates
+
+Instead of writing conditions repeatedly,
+
+create reusable Predicates.
+
+```java
+Predicate<Employee> highSalary =
+        employee -> employee.getSalary() > 50000;
+
+Predicate<Employee> developer =
+        employee -> employee.getDepartment().equals("Developer");
+```
+
+These can be reused throughout the application.
+
+---
+
+# Predicate in Collections
+
+Without Predicate
+
+```java
+for (Integer number : numbers) {
+
+    if (number % 2 == 0) {
+
+        System.out.println(number);
+
+    }
+
+}
+```
+
+Reusable approach
+
+```java
+Predicate<Integer> even =
+        number -> number % 2 == 0;
+
+for (Integer number : numbers) {
+
+    if (even.test(number)) {
+
+        System.out.println(number);
+
+    }
+
+}
+```
+
+Only the Predicate changes.
+
+The loop remains reusable.
+
+---
+
+# Predicate Chaining
+
+Suppose
+
+```java
+Predicate<Employee> highSalary =
+        employee -> employee.getSalary() > 50000;
+
+Predicate<Employee> developer =
+        employee -> employee.getDepartment().equals("Developer");
+```
+
+Instead of
+
+```java
+employee ->
+employee.getSalary() > 50000 &&
+employee.getDepartment().equals("Developer")
+```
+
+Use
+
+```java
+Predicate<Employee> eligible =
+        highSalary.and(developer);
+```
+
+Equivalent to
+
+```java
+highSalary.test(employee)
+&&
+developer.test(employee)
+```
+
+---
+
+# OR Operation
+
+```java
+Predicate<Employee> manager =
+        employee -> employee.getRole().equals("Manager");
+
+Predicate<Employee> condition =
+        developer.or(manager);
+```
+
+Equivalent
+
+```java
+developer.test(employee)
+||
+manager.test(employee)
+```
+
+---
+
+# Negation
+
+```java
+Predicate<Employee> developer =
+        employee -> employee.getDepartment().equals("Developer");
+```
+
+Negation
+
+```java
+Predicate<Employee> nonDeveloper =
+        developer.negate();
+```
+
+Equivalent
+
+```java
+!developer.test(employee)
+```
+
+---
+
+# Combining Multiple Predicates
+
+```java
+Predicate<Employee> experienced =
+        employee -> employee.getExperience() >= 5;
+
+Predicate<Employee> highSalary =
+        employee -> employee.getSalary() > 50000;
+
+Predicate<Employee> developer =
+        employee -> employee.getDepartment().equals("Developer");
+```
+
+Combine
+
+```java
+Predicate<Employee> eligible =
+        developer
+                .and(experienced)
+                .and(highSalary);
+```
+
+Produces readable and reusable business rules.
+
+---
+
+# Static Method - isEqual()
+
+Example
+
+```java
+Predicate<String> javaLanguage =
+        Predicate.isEqual("Java");
+```
+
+Execution
+
+```java
+javaLanguage.test("Java");
+```
+
+Output
+
+```text
+true
+```
+
+Execution
+
+```java
+javaLanguage.test("Python");
+```
+
+Output
+
+```text
+false
+```
+
+Internally behaves similarly to
+
+```java
+Objects.equals(a, b);
+```
+
+---
+
+# Static Method - not() (Java 11)
+
+Instead of
+
+```java
+developer.negate()
+```
+
+Java 11 introduced
+
+```java
+Predicate.not(developer)
+```
+
+Commonly used in Streams.
+
+Example
+
+```java
+employees.stream()
+         .filter(Predicate.not(Employee::isRetired))
+         .toList();
+```
+
+---
+
+# Predicate in Stream API
+
+This is the most common real-world usage.
+
+```java
+employees.stream()
+         .filter(employee -> employee.getSalary() > 50000)
+         .toList();
+```
+
+Question
+
+What is
+
+```java
+employee -> employee.getSalary() > 50000
+```
+
+Answer
+
+```java
+Predicate<Employee>
+```
+
+because
+
+```java
+filter()
+```
+
+expects
+
+```java
+Predicate<? super T>
+```
+
+Method Signature
+
+```java
+Stream<T> filter(Predicate<? super T> predicate)
+```
+
+---
+
+# Predicate vs Function
+
+| Predicate           | Function                |
+| ------------------- | ----------------------- |
+| Returns `boolean`   | Returns any type        |
+| Used for conditions | Used for transformation |
+| Method = `test()`   | Method = `apply()`      |
+
+Predicate
+
+```java
+Predicate<Integer> even =
+        number -> number % 2 == 0;
+```
+
+Function
+
+```java
+Function<Integer, String> convert =
+        number -> "Value : " + number;
+```
+
+---
+
+# Predicate vs Consumer
+
+| Predicate         | Consumer           |
+| ----------------- | ------------------ |
+| Returns `boolean` | Returns `void`     |
+| Tests a condition | Performs an action |
+| `test()`          | `accept()`         |
+
+Predicate answers
+
+> "Should I keep this object?"
+
+Consumer answers
+
+> "What should I do with this object?"
+
+---
+
+# JVM Perspective
+
+Example
+
+```java
+Predicate<Employee> highSalary =
+        employee -> employee.getSalary() > 50000;
+```
+
+Compilation Flow
+
+```text
+Lambda Expression
+        │
+        ▼
+Target Functional Interface
+(Predicate<Employee>)
+        │
+        ▼
+Locate Abstract Method
+
+boolean test(T)
+        │
+        ▼
+Generic Substitution
+
+T = Employee
+        │
+        ▼
+Method Becomes
+
+boolean test(Employee)
+        │
+        ▼
+Compiler Generates invokedynamic
+        │
+        ▼
+LambdaMetafactory
+        │
+        ▼
+Predicate Object
+```
+
+---
+
+# Real-World Uses
+
+`Predicate` is commonly used in
+
+* Stream API (`filter()`)
+* Validation Frameworks
+* Authorization Rules
+* Business Rule Engines
+* Dynamic Query Building
+* Search APIs
+* Feature Flags
+* Conditional Processing
+
+Example
+
+```java
+Predicate<User> activeUser =
+        User::isActive;
+
+Predicate<User> adminUser =
+        user -> user.getRole().equals("ADMIN");
+
+Predicate<User> activeAdmin =
+        activeUser.and(adminUser);
+```
+
+---
+
+# Advantages
+
+* Encourages reusable conditions
+* Improves readability
+* Eliminates duplicate filtering logic
+* Works seamlessly with Streams
+* Supports functional composition (`and`, `or`, `negate`)
+* Promotes declarative programming
+
+---
+
+# Limitations
+
+* Accepts only one input parameter
+* Returns only a boolean value
+* Should ideally avoid side effects
+* Complex business logic may require combining multiple Predicates
+
+---
+
+# Frequently Asked Interview Questions
+
+### What is `Predicate<T>`?
+
+A Functional Interface representing a condition that accepts one input and returns a boolean result.
+
+---
+
+### What is the abstract method of Predicate?
+
+```java
+boolean test(T t);
+```
+
+---
+
+### Why does Predicate return a boolean?
+
+Because it represents a logical condition or test.
+
+---
+
+### Why write `Predicate<Employee>` instead of `Predicate`?
+
+`Predicate<Employee>` preserves generic type information, allowing the compiler to infer that the lambda parameter is an `Employee`.
+
+Using the raw type `Predicate` causes the parameter to become an `Object`, losing type safety.
+
+---
+
+### Can Predicates be combined?
+
+Yes.
+
+Using
+
+* `and()`
+* `or()`
+* `negate()`
+
+---
+
+### Which Stream method accepts a Predicate?
+
+```java
+filter()
+```
+
+---
+
+### Difference between Predicate and Function?
+
+Predicate evaluates a condition and returns a boolean.
+
+Function transforms one value into another.
+
+---
+
+### Can Predicate have side effects?
+
+Technically yes.
+
+However, Predicates should ideally be **pure functions** that depend only on their input and do not modify external state.
+
+---
+
+### What is `Predicate.isEqual()`?
+
+A static factory method that creates a Predicate to test equality using `Objects.equals()` semantics.
+
+---
+
+### What is `Predicate.not()`?
+
+A Java 11 static method that returns the logical negation of an existing Predicate.
+
+---
+
+# Key Takeaways
+
+* `Predicate<T>` represents a **boolean-valued condition**.
+* It contains one abstract method: `boolean test(T t)`.
+* The generic type (`T`) determines the type of the lambda parameter.
+* Using `Predicate<T>` provides compile-time type safety, while the raw `Predicate` type treats the parameter as an `Object`.
+* Predicates can be composed using `and()`, `or()`, and `negate()`.
+* `Stream.filter()` is the most common consumer of a `Predicate`.
+* Predicates should ideally be reusable, composable, and free of side effects.
+* `Predicate` is one of the core building blocks of Java's Functional Programming model.
