@@ -3524,3 +3524,1653 @@ Understanding Stack remains important because many existing codebases still use 
 11. Why does Java recommend Deque instead of Stack?
 12. When would you use Vector instead of ArrayList?
 13. Compare Stack and Deque.
+
+# Chapter 7 — Set Interface
+
+The **Set** interface is the second major collection type in the Java Collections Framework.
+
+Unlike `List`, which focuses on **ordered collections**, `Set` focuses on **uniqueness**.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+     Set
+```
+
+`Set` is an **interface**, not a class.
+
+Common implementations
+
+- HashSet
+- LinkedHashSet
+- TreeSet
+
+---
+
+# Why Was Set Introduced?
+
+Suppose we are storing registered students.
+
+Using a List
+
+```text
+Guru
+Rahul
+Anitha
+Guru
+Rahul
+```
+
+Duplicate registrations are possible.
+
+In many real-world applications, duplicates are not allowed.
+
+Examples
+
+- Student IDs
+- Email addresses
+- Product IDs
+- Usernames
+
+Java introduced the **Set** interface to automatically prevent duplicate elements.
+
+---
+
+# What is a Set?
+
+**Definition**
+
+> A Set is a collection that **does not allow duplicate elements**.
+
+Unlike List
+
+- Duplicate elements are not allowed.
+- Index-based access is not supported.
+- Ordering depends on the implementation.
+
+---
+
+# Characteristics of Set
+
+## 1. No Duplicate Elements
+
+Example
+
+```java
+Set<String> names = new HashSet<>();
+
+names.add("Guru");
+names.add("Rahul");
+names.add("Guru");
+```
+
+Result
+
+```
+Guru
+Rahul
+```
+
+The duplicate `"Guru"` is ignored.
+
+No exception is thrown.
+
+---
+
+## 2. add() Returns a boolean
+
+Unlike many collection methods, `add()` returns a boolean.
+
+```java
+boolean result = names.add("Guru");
+```
+
+Return values
+
+```
+true
+```
+
+The element was added.
+
+```
+false
+```
+
+The element already existed.
+
+Example
+
+```java
+System.out.println(names.add("Guru"));   // true
+
+System.out.println(names.add("Guru"));   // false
+```
+
+---
+
+## 3. No Index-Based Access
+
+Unlike List
+
+```java
+list.get(2);
+```
+
+A Set does not provide
+
+```java
+set.get(2);
+```
+
+or
+
+```java
+set.remove(2);
+```
+
+because a Set has no concept of element positions.
+
+---
+
+## 4. Order Depends on the Implementation
+
+The Set interface itself **does not guarantee any ordering**.
+
+Different implementations behave differently.
+
+### HashSet
+
+```
+B
+A
+D
+C
+```
+
+No guaranteed order.
+
+---
+
+### LinkedHashSet
+
+```
+A
+B
+C
+D
+```
+
+Maintains insertion order.
+
+---
+
+### TreeSet
+
+```
+A
+B
+C
+D
+```
+
+Maintains sorted order.
+
+---
+
+## 5. Allows One null (HashSet & LinkedHashSet)
+
+Example
+
+```java
+Set<String> names = new HashSet<>();
+
+names.add(null);
+names.add(null);
+```
+
+Result
+
+```
+null
+```
+
+Only one null value is stored because duplicates are not allowed.
+
+> **Note:** TreeSet handles null differently because it sorts elements. This will be covered in the TreeSet chapter.
+
+---
+
+# Methods Available in Set
+
+Set extends Collection and **does not introduce any new methods**.
+
+Common inherited methods
+
+```java
+add(E e)
+
+remove(Object o)
+
+contains(Object o)
+
+size()
+
+isEmpty()
+
+clear()
+
+iterator()
+
+forEach()
+
+stream()
+
+parallelStream()
+
+toArray()
+```
+
+---
+
+# Methods Not Available
+
+Because Set has no index-based access, the following methods do not exist.
+
+```java
+get()
+
+set()
+
+add(index)
+
+remove(index)
+
+indexOf()
+
+lastIndexOf()
+
+subList()
+
+listIterator()
+```
+
+These belong to the List interface.
+
+---
+
+# Example
+
+```java
+Set<String> languages = new HashSet<>();
+
+languages.add("Java");
+languages.add("Python");
+languages.add("Java");
+
+System.out.println(languages);
+```
+
+Possible output
+
+```
+[Python, Java]
+```
+
+Observations
+
+- Duplicate `"Java"` is ignored.
+- Order is not guaranteed.
+
+---
+
+# Why Doesn't Set Have get(index)?
+
+Suppose
+
+```java
+set.get(0);
+```
+
+Which element should be returned?
+
+```
+Java
+
+Python
+
+C++
+
+Go
+```
+
+The Set interface does not define a first, second, or third element.
+
+Therefore, index-based methods are not meaningful.
+
+---
+
+# Real-World Examples
+
+## Registered Students
+
+```
+Guru
+Rahul
+Anitha
+```
+
+Each student should appear only once.
+
+---
+
+## Email Addresses
+
+```
+guru@gmail.com
+
+rahul@gmail.com
+```
+
+Duplicate email IDs are not allowed.
+
+---
+
+## Product IDs
+
+```
+P101
+
+P102
+
+P103
+```
+
+Each product ID must be unique.
+
+---
+
+## Tags
+
+```
+Java
+
+Spring
+
+Backend
+```
+
+Repeated tags are unnecessary.
+
+---
+
+# List vs Set
+
+| Feature | List | Set |
+|----------|------|-----|
+| Duplicate Elements | Allowed | Not Allowed |
+| Insertion Order | Preserved | Depends on implementation |
+| Index-Based Access | Yes | No |
+| get(index) | Yes | No |
+| add(index) | Yes | No |
+| remove(index) | Yes | No |
+| Primary Purpose | Ordered collection | Unique elements |
+
+---
+
+# Why Doesn't Set Add New Methods?
+
+The Collection interface already provides all necessary operations.
+
+```
+add()
+
+remove()
+
+contains()
+
+size()
+```
+
+The Set interface changes the **behavior (contract)** rather than introducing new operations.
+
+Its contract is simply
+
+> **No duplicate elements are allowed.**
+
+---
+
+# Common Interview Mistakes
+
+❌ Set never preserves order.
+
+✔ The Set interface does not guarantee order.
+
+- HashSet → No guaranteed order.
+- LinkedHashSet → Insertion order.
+- TreeSet → Sorted order.
+
+---
+
+❌ add() throws an exception for duplicates.
+
+✔ add() returns false.
+
+---
+
+❌ Set supports get(index).
+
+✔ Set has no positional access.
+
+---
+
+❌ Set introduces new methods.
+
+✔ Set adds no new methods beyond those inherited from Collection.
+
+---
+
+# Key Takeaways
+
+- Set is an interface that extends Collection.
+- Duplicate elements are not allowed.
+- add() returns true for successful insertion and false for duplicates.
+- Set does not support index-based operations.
+- Ordering depends on the implementation.
+- Set introduces no additional methods; it changes the uniqueness contract.
+- Common implementations are HashSet, LinkedHashSet, and TreeSet.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is the Set interface?
+2. Why was Set introduced?
+3. Does Set allow duplicate elements?
+4. Does Set preserve insertion order?
+5. Does Set support indexing?
+6. What does add() return when inserting a duplicate?
+
+## Intermediate
+
+7. Why doesn't Set provide get(index)?
+8. Why doesn't Set introduce new methods?
+9. Compare List and Set.
+10. Name the major implementations of Set and explain their ordering behavior.
+
+# Chapter 8 — HashSet
+
+HashSet is the most commonly used implementation of the **Set** interface.
+
+It stores **unique elements** and provides very fast insertion, deletion, and searching.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+     Set
+      │
+  HashSet
+```
+
+---
+
+# What is HashSet?
+
+**Definition**
+
+> HashSet is an implementation of the Set interface that stores **unique elements** using **hashing**.
+
+Characteristics
+
+- Does not allow duplicate elements.
+- Does not guarantee iteration order.
+- Allows one null element.
+- Average time complexity for add(), remove(), and contains() is O(1).
+
+---
+
+# Why Was HashSet Introduced?
+
+The Set interface defines the rule
+
+> No duplicate elements.
+
+HashSet provides an efficient implementation of this rule using **hashing**, allowing duplicate detection without comparing every element in the collection.
+
+---
+
+# Internal Implementation
+
+HashSet does **not** store elements directly.
+
+Internally, it uses a **HashMap**.
+
+Conceptually
+
+```java
+class HashSet<E> {
+
+    private HashMap<E, Object> map;
+
+    private static final Object PRESENT = new Object();
+
+}
+```
+
+Each element in the HashSet becomes a **key** in the internal HashMap.
+
+The value is a constant dummy object (`PRESENT`) because only the keys are important.
+
+Example
+
+```java
+Set<String> set = new HashSet<>();
+
+set.add("Java");
+set.add("Spring");
+```
+
+Conceptually becomes
+
+```
+HashMap
+
+Key         Value
+
+Java   ->   PRESENT
+
+Spring ->   PRESENT
+```
+
+---
+
+# How add() Works
+
+When
+
+```java
+set.add("Java");
+```
+
+is executed,
+
+HashSet internally performs
+
+```java
+map.put("Java", PRESENT);
+```
+
+If the key does not exist
+
+- The element is inserted.
+- add() returns true.
+
+If the key already exists
+
+- No duplicate is inserted.
+- add() returns false.
+
+---
+
+# How Does HashSet Detect Duplicates?
+
+HashSet uses two methods
+
+```java
+hashCode()
+
+equals()
+```
+
+The simplified process is
+
+1. Calculate the object's hashCode().
+2. Locate the appropriate storage location.
+3. If another element is already there, compare them using equals().
+4. If equals() returns true, the element is considered a duplicate.
+5. Otherwise, it is stored as a different element.
+
+> The detailed storage mechanism (buckets, collisions, resizing, etc.) is part of HashMap internals and will be covered in the Map chapter.
+
+---
+
+# equals() and hashCode()
+
+Both methods are required.
+
+Example
+
+```java
+class Student {
+
+    private int id;
+
+    private String name;
+
+}
+```
+
+If only equals() is overridden and hashCode() is not, logically equal objects may still be stored as duplicates.
+
+Rule
+
+> If two objects are equal according to equals(), they **must** produce the same hashCode().
+
+---
+
+# Time Complexity
+
+| Operation | Average Complexity |
+|-----------|--------------------|
+| add() | O(1) |
+| contains() | O(1) |
+| remove() | O(1) |
+
+Worst case
+
+```
+O(n)
+```
+
+---
+
+# Does HashSet Preserve Order?
+
+No.
+
+Example
+
+```java
+Set<String> set = new HashSet<>();
+
+set.add("A");
+set.add("B");
+set.add("C");
+```
+
+Possible output
+
+```
+[C, A, B]
+```
+
+The order is not guaranteed.
+
+---
+
+# Does HashSet Allow null?
+
+Yes.
+
+Example
+
+```java
+Set<String> set = new HashSet<>();
+
+set.add(null);
+
+set.add(null);
+```
+
+Result
+
+```
+null
+```
+
+Only one null value is stored because duplicates are not allowed.
+
+---
+
+# When Should You Use HashSet?
+
+Use HashSet when
+
+- Elements must be unique.
+- Ordering is not important.
+- Fast searching is required.
+
+Examples
+
+- Usernames
+- Email addresses
+- Product IDs
+- Tags
+- Unique records
+
+---
+
+# HashSet vs List
+
+| Feature | HashSet | List |
+|----------|----------|------|
+| Duplicates | Not Allowed | Allowed |
+| Order | Not Guaranteed | Preserved |
+| Index Access | No | Yes |
+| contains() | O(1) Average | O(n) |
+
+---
+
+# Common Interview Mistakes
+
+❌ HashSet stores data directly.
+
+✔ HashSet is internally backed by a HashMap.
+
+---
+
+❌ HashSet uses only hashCode().
+
+✔ HashSet uses both hashCode() and equals().
+
+---
+
+❌ Overriding equals() is enough.
+
+✔ equals() and hashCode() should always be overridden together.
+
+---
+
+❌ HashSet preserves insertion order.
+
+✔ Use LinkedHashSet if insertion order is required.
+
+---
+
+# Key Takeaways
+
+- HashSet implements the Set interface.
+- Internally backed by a HashMap.
+- Stores elements as keys in the internal HashMap.
+- Duplicate detection relies on hashCode() and equals().
+- Does not preserve insertion order.
+- Allows one null element.
+- Average complexity for add(), remove(), and contains() is O(1).
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is HashSet?
+2. Why was HashSet introduced?
+3. Does HashSet allow duplicate elements?
+4. Does HashSet preserve insertion order?
+5. Does HashSet allow null?
+
+## Intermediate
+
+6. How is HashSet implemented internally?
+7. Why does HashSet use a HashMap?
+8. How does HashSet detect duplicate elements?
+9. Why are equals() and hashCode() both required?
+10. When would you choose HashSet over a List?
+
+# Chapter 9 — LinkedHashSet
+
+`LinkedHashSet` is an implementation of the **Set** interface that stores **unique elements** while preserving **insertion order**.
+
+It combines the advantages of **HashSet** (fast lookups) with the ability to maintain the order in which elements were added.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+     Set
+      │
+  HashSet
+      │
+LinkedHashSet
+```
+
+---
+
+# Why Was LinkedHashSet Introduced?
+
+`HashSet` efficiently stores unique elements but **does not guarantee iteration order**.
+
+Example
+
+```java
+Set<String> technologies = new HashSet<>();
+
+technologies.add("Java");
+technologies.add("Spring");
+technologies.add("Docker");
+technologies.add("MongoDB");
+
+System.out.println(technologies);
+```
+
+Possible Output
+
+```
+[Docker, Java, MongoDB, Spring]
+```
+
+The order is unpredictable.
+
+In many applications, the order in which elements are inserted is important.
+
+Examples
+
+- Recently viewed products
+- Navigation history
+- Ordered tags
+- Recently opened files
+
+To solve this problem, Java introduced **LinkedHashSet**.
+
+---
+
+# What is LinkedHashSet?
+
+**Definition**
+
+> LinkedHashSet is an implementation of the Set interface that stores **unique elements** while maintaining **insertion order**.
+
+Characteristics
+
+- Does not allow duplicate elements.
+- Preserves insertion order.
+- Allows one null element.
+- Provides average O(1) time complexity for add(), remove(), and contains().
+
+---
+
+# Characteristics
+
+## 1. No Duplicate Elements
+
+Example
+
+```java
+Set<String> set = new LinkedHashSet<>();
+
+set.add("Java");
+set.add("Spring");
+set.add("Java");
+```
+
+Result
+
+```
+Java
+Spring
+```
+
+The duplicate `"Java"` is ignored.
+
+---
+
+## 2. Preserves Insertion Order
+
+Example
+
+```java
+Set<String> set = new LinkedHashSet<>();
+
+set.add("Java");
+set.add("Spring");
+set.add("Docker");
+set.add("MongoDB");
+
+System.out.println(set);
+```
+
+Output
+
+```
+Java
+Spring
+Docker
+MongoDB
+```
+
+Elements are returned in the same order they were inserted.
+
+---
+
+## 3. Allows One null
+
+Example
+
+```java
+Set<String> set = new LinkedHashSet<>();
+
+set.add(null);
+
+set.add(null);
+```
+
+Result
+
+```
+null
+```
+
+Only one null value is stored.
+
+---
+
+## 4. Fast Operations
+
+Average time complexity
+
+| Operation | Complexity |
+|-----------|------------|
+| add() | O(1) |
+| contains() | O(1) |
+| remove() | O(1) |
+
+---
+
+# How Does LinkedHashSet Preserve Order?
+
+Conceptually, LinkedHashSet combines
+
+- Hashing for fast lookup.
+- A linked structure to remember insertion order.
+
+Conceptual view
+
+```
+Hash Storage
+
+Java
+Spring
+Docker
+MongoDB
+```
+
+Insertion order
+
+```
+Java
+ │
+ ▼
+Spring
+ │
+ ▼
+Docker
+ │
+ ▼
+MongoDB
+```
+
+When iterating, Java follows the linked order instead of the hash storage order.
+
+> **Note:** The detailed implementation uses `LinkedHashMap` internally. We'll study its internals in the Map chapter.
+
+---
+
+# What Happens When a Duplicate is Added?
+
+Example
+
+```java
+Set<String> set = new LinkedHashSet<>();
+
+set.add("Java");
+set.add("Spring");
+set.add("Java");
+```
+
+Output
+
+```
+Java
+Spring
+```
+
+The duplicate is ignored.
+
+---
+
+# Does Re-inserting an Element Change Its Position?
+
+Example
+
+```java
+LinkedHashSet<String> set = new LinkedHashSet<>();
+
+set.add("A");
+set.add("B");
+set.add("C");
+
+set.add("A");
+```
+
+Output
+
+```
+A
+B
+C
+```
+
+The existing element remains in its original position.
+
+Re-inserting an element does **not** move it to the end.
+
+---
+
+# Internal Architecture (High Level)
+
+```
+LinkedHashSet
+        │
+        ▼
+Uses LinkedHashMap Internally
+        │
+        ▼
+Hashing + Linked Structure
+```
+
+At this stage, it is sufficient to know that LinkedHashSet relies on a `LinkedHashMap`.
+
+The complete internal implementation will be covered in the Map chapter.
+
+---
+
+# HashSet vs LinkedHashSet
+
+| Feature | HashSet | LinkedHashSet |
+|----------|----------|---------------|
+| Duplicate Elements | Not Allowed | Not Allowed |
+| Order | Not Guaranteed | Preserves Insertion Order |
+| Allows null | Yes | Yes |
+| Average add() | O(1) | O(1) |
+| Average contains() | O(1) | O(1) |
+| Average remove() | O(1) | O(1) |
+| Memory Usage | Lower | Slightly Higher |
+| Internal Implementation | HashMap | LinkedHashMap |
+
+---
+
+# When Should You Use LinkedHashSet?
+
+Use LinkedHashSet when
+
+- Elements must be unique.
+- Insertion order must be preserved.
+- Fast lookup is required.
+
+Examples
+
+- Recently viewed products
+- Search history
+- Ordered tags
+- Browser history
+- Recently opened files
+
+---
+
+# Common Interview Mistakes
+
+❌ LinkedHashSet sorts elements.
+
+✔ It preserves **insertion order**, not sorted order.
+
+---
+
+❌ LinkedHashSet allows duplicate elements.
+
+✔ It follows the Set contract and stores only unique elements.
+
+---
+
+❌ Re-inserting an element moves it to the end.
+
+✔ Existing elements remain in their original insertion position.
+
+---
+
+❌ LinkedHashSet is slower because it is linked.
+
+✔ Basic operations still have average O(1) complexity. It only uses slightly more memory than HashSet.
+
+---
+
+# Key Takeaways
+
+- LinkedHashSet extends HashSet.
+- Stores unique elements.
+- Preserves insertion order.
+- Allows one null element.
+- Uses hashing for fast operations.
+- Internally backed by LinkedHashMap.
+- Average complexity for add(), remove(), and contains() is O(1).
+- Uses slightly more memory than HashSet due to maintaining insertion order.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is LinkedHashSet?
+2. Why was LinkedHashSet introduced?
+3. Does LinkedHashSet allow duplicate elements?
+4. Does LinkedHashSet preserve insertion order?
+5. Does LinkedHashSet allow null?
+
+## Intermediate
+
+6. How does LinkedHashSet preserve insertion order?
+7. What happens if you add the same element twice?
+8. Does re-inserting an element change its position?
+9. How is LinkedHashSet implemented internally?
+10. Compare HashSet and LinkedHashSet.
+
+# Chapter 10 — TreeSet
+
+`TreeSet` is an implementation of the **Set** interface that stores **unique elements in sorted order**.
+
+Unlike `HashSet` and `LinkedHashSet`, which are based on **hashing**, `TreeSet` is based on **sorting**.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+     Set
+      │
+ SortedSet
+      │
+NavigableSet
+      │
+   TreeSet
+```
+
+Unlike `HashSet`, `TreeSet` also implements **SortedSet** and **NavigableSet**, which provide additional sorting and navigation capabilities.
+
+---
+
+# Why Was TreeSet Introduced?
+
+Suppose we are storing student marks.
+
+Input
+
+```
+85
+72
+96
+68
+91
+```
+
+Using a HashSet
+
+```
+96
+68
+85
+91
+72
+```
+
+Order is unpredictable.
+
+Using a LinkedHashSet
+
+```
+85
+72
+96
+68
+91
+```
+
+Insertion order is preserved.
+
+But many applications require the data to always remain sorted.
+
+Expected output
+
+```
+68
+72
+85
+91
+96
+```
+
+To solve this problem, Java introduced **TreeSet**.
+
+---
+
+# What is TreeSet?
+
+**Definition**
+
+> TreeSet is an implementation of the Set interface that stores **unique elements in sorted order**.
+
+Characteristics
+
+- Does not allow duplicate elements.
+- Automatically sorts elements.
+- Does not support indexing.
+- Does not allow arbitrary null values.
+- Average time complexity is O(log n).
+
+---
+
+# Automatic Sorting
+
+Example
+
+```java
+Set<Integer> marks = new TreeSet<>();
+
+marks.add(85);
+marks.add(72);
+marks.add(96);
+marks.add(68);
+marks.add(91);
+
+System.out.println(marks);
+```
+
+Output
+
+```
+[68, 72, 85, 91, 96]
+```
+
+TreeSet automatically sorts the elements.
+
+---
+
+# How Does TreeSet Sort?
+
+TreeSet compares elements while inserting them.
+
+Example
+
+```
+85
+
+72
+```
+
+Since
+
+```
+72 < 85
+```
+
+72 is placed before 85.
+
+TreeSet continuously compares elements and maintains sorted order.
+
+---
+
+# Natural Ordering
+
+Many Java classes already know how to compare themselves.
+
+Examples
+
+- Integer
+- Long
+- Double
+- String
+- LocalDate
+
+These classes implement the `Comparable` interface.
+
+Therefore, they work directly with TreeSet.
+
+Example
+
+```java
+TreeSet<Integer> numbers = new TreeSet<>();
+```
+
+No additional configuration is required.
+
+---
+
+# Comparable
+
+**Definition**
+
+> Comparable defines the **natural ordering** of objects.
+
+Interface
+
+```java
+public interface Comparable<T> {
+
+    int compareTo(T other);
+
+}
+```
+
+The `compareTo()` method returns
+
+| Return Value | Meaning |
+|--------------|---------|
+| Negative | Current object is smaller |
+| Zero | Objects are equal |
+| Positive | Current object is larger |
+
+---
+
+# TreeSet with Comparable
+
+```java
+class Student implements Comparable<Student> {
+
+    private int id;
+    private String name;
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public int compareTo(Student other) {
+        return Integer.compare(this.id, other.id);
+    }
+
+    @Override
+    public String toString() {
+        return id + " - " + name;
+    }
+}
+```
+
+Usage
+
+```java
+TreeSet<Student> students = new TreeSet<>();
+
+students.add(new Student(103, "Guru"));
+students.add(new Student(101, "Rahul"));
+students.add(new Student(105, "Anitha"));
+students.add(new Student(102, "Vijay"));
+
+System.out.println(students);
+```
+
+Output
+
+```
+101 - Rahul
+102 - Vijay
+103 - Guru
+105 - Anitha
+```
+
+Students are sorted by `id`.
+
+---
+
+# Comparator
+
+Sometimes one natural ordering is not enough.
+
+Example
+
+- Sort by ID
+- Sort by Name
+- Sort by Age
+
+Instead of modifying the class, use a `Comparator`.
+
+Example
+
+```java
+Comparator<Student> byName =
+        Comparator.comparing(Student::getName);
+
+TreeSet<Student> students =
+        new TreeSet<>(byName);
+```
+
+Now the TreeSet sorts students by name.
+
+---
+
+# Comparable vs Comparator
+
+| Comparable | Comparator |
+|------------|------------|
+| Inside the class | Outside the class |
+| Defines natural ordering | Defines custom ordering |
+| Uses compareTo() | Uses compare() |
+| One ordering | Multiple orderings |
+
+---
+
+# What Happens with Custom Objects?
+
+Suppose
+
+```java
+class Student {
+
+    int id;
+    String name;
+
+}
+```
+
+Then
+
+```java
+TreeSet<Student> students = new TreeSet<>();
+
+students.add(new Student());
+```
+
+throws
+
+```
+ClassCastException
+```
+
+because Java does not know how to compare two Student objects.
+
+To fix this
+
+- Implement Comparable
+- OR provide a Comparator
+
+---
+
+# Does TreeSet Allow null?
+
+No.
+
+Example
+
+```java
+TreeSet<String> set = new TreeSet<>();
+
+set.add(null);
+```
+
+Result
+
+```
+NullPointerException
+```
+
+TreeSet cannot determine how to compare null with other elements.
+
+---
+
+# Important Methods
+
+TreeSet inherits methods from Set, SortedSet, and NavigableSet.
+
+Common methods
+
+```java
+first()
+
+last()
+
+higher()
+
+lower()
+
+ceiling()
+
+floor()
+
+pollFirst()
+
+pollLast()
+```
+
+These methods allow navigation through the sorted collection.
+
+---
+
+# Time Complexity
+
+| Operation | Complexity |
+|-----------|------------|
+| add() | O(log n) |
+| contains() | O(log n) |
+| remove() | O(log n) |
+
+Compared to HashSet
+
+| Collection | add() |
+|------------|--------|
+| HashSet | O(1) Average |
+| LinkedHashSet | O(1) Average |
+| TreeSet | O(log n) |
+
+---
+
+# Internal Architecture
+
+High-level architecture
+
+```
+TreeSet
+      │
+      ▼
+TreeMap
+      │
+      ▼
+Red-Black Tree
+```
+
+TreeSet is internally backed by a **TreeMap**.
+
+The Red-Black Tree implementation will be studied in detail during the Map chapter.
+
+---
+
+# HashSet vs LinkedHashSet vs TreeSet
+
+| Feature | HashSet | LinkedHashSet | TreeSet |
+|----------|----------|---------------|----------|
+| Duplicate Elements | Not Allowed | Not Allowed | Not Allowed |
+| Order | Not Guaranteed | Insertion Order | Sorted Order |
+| Allows null | Yes | Yes | No |
+| Index-Based Access | No | No | No |
+| add() Complexity | O(1) Average | O(1) Average | O(log n) |
+| Internal Structure | HashMap | LinkedHashMap | TreeMap |
+
+---
+
+# When Should You Use TreeSet?
+
+Use TreeSet when
+
+- Elements must be unique.
+- Elements should always remain sorted.
+- Navigation operations are required.
+
+Examples
+
+- Student rankings
+- Product prices
+- Leaderboards
+- Sorted dates
+- Alphabetically sorted names
+
+---
+
+# Common Interview Mistakes
+
+❌ TreeSet preserves insertion order.
+
+✔ TreeSet preserves **sorted order**.
+
+---
+
+❌ TreeSet uses hashing.
+
+✔ TreeSet uses a tree-based structure.
+
+---
+
+❌ TreeSet allows null.
+
+✔ TreeSet throws `NullPointerException` when using natural ordering.
+
+---
+
+❌ compareTo() returns boolean.
+
+✔ compareTo() returns a negative, zero, or positive integer.
+
+---
+
+# Key Takeaways
+
+- TreeSet implements the Set interface through SortedSet and NavigableSet.
+- Stores unique elements in sorted order.
+- Uses natural ordering (`Comparable`) or custom ordering (`Comparator`).
+- Internally backed by TreeMap.
+- Does not allow arbitrary null values.
+- Average complexity for add(), remove(), and contains() is O(log n).
+- Suitable when sorted unique data is required.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is TreeSet?
+2. Why was TreeSet introduced?
+3. Does TreeSet allow duplicate elements?
+4. Does TreeSet preserve insertion order?
+5. Does TreeSet allow null?
+
+## Intermediate
+
+6. How does TreeSet maintain sorted order?
+7. What is natural ordering?
+8. Explain Comparable and Comparator.
+9. Why does TreeSet throw ClassCastException for custom objects?
+10. What is the internal data structure used by TreeSet?
+11. Compare HashSet, LinkedHashSet, and TreeSet.
