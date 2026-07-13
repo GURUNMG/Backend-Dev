@@ -5174,3 +5174,1771 @@ Examples
 9. Why does TreeSet throw ClassCastException for custom objects?
 10. What is the internal data structure used by TreeSet?
 11. Compare HashSet, LinkedHashSet, and TreeSet.
+
+# Chapter 11 — Queue Interface
+
+The **Queue** interface represents a collection designed to process elements in a specific order.
+
+Most queue implementations follow the **FIFO (First In, First Out)** principle, where the first element inserted is the first element removed.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+    Queue
+      │
+ ┌────┴────────────┐
+ │                 │
+Deque       PriorityQueue
+ │
+ArrayDeque
+LinkedList
+```
+
+Queue is an **interface**, and different implementations provide different behaviors.
+
+---
+
+# Why Was Queue Introduced?
+
+Many real-world problems require elements to be processed in the order they arrive.
+
+Examples
+
+- Customers waiting in a billing queue
+- Printer jobs
+- Task scheduling
+- CPU scheduling
+- Message processing
+- Breadth-First Search (BFS)
+
+Using a queue ensures that the **first element added is processed first**.
+
+---
+
+# What is FIFO?
+
+FIFO stands for
+
+> **First In, First Out**
+
+Example
+
+```
+Insert
+
+A
+B
+C
+```
+
+Queue
+
+```
+Front
+
+↓
+
+A
+
+B
+
+C
+
+↑
+
+Rear
+```
+
+Removing an element
+
+```
+poll()
+```
+
+Removes
+
+```
+A
+```
+
+Remaining
+
+```
+Front
+
+↓
+
+B
+
+C
+```
+
+The first inserted element is the first one removed.
+
+---
+
+# Why Not Use a List?
+
+Suppose we use an `ArrayList`.
+
+```java
+List<String> list = new ArrayList<>();
+
+list.add("A");
+list.add("B");
+list.add("C");
+
+list.remove(0);
+```
+
+After removing the first element
+
+```
+Before
+
+A
+B
+C
+
+After
+
+B
+C
+```
+
+All remaining elements must shift left.
+
+Time complexity
+
+```
+O(n)
+```
+
+Queue implementations are optimized for insertion and removal according to queue semantics.
+
+---
+
+# Characteristics of Queue
+
+- Usually follows FIFO.
+- Allows duplicate elements.
+- Does not support index-based access.
+- Elements are inserted at the rear.
+- Elements are removed from the front.
+- Provides specialized methods for insertion, removal, and retrieval.
+
+---
+
+# Queue Methods
+
+Queue provides six primary methods.
+
+| Operation | Throws Exception | Returns Special Value |
+|-----------|------------------|-----------------------|
+| Insert | add() | offer() |
+| Remove | remove() | poll() |
+| Retrieve Head | element() | peek() |
+
+---
+
+# add()
+
+Adds an element to the queue.
+
+```java
+Queue<String> queue = new LinkedList<>();
+
+queue.add("Java");
+queue.add("Spring");
+```
+
+Returns
+
+```java
+boolean
+```
+
+If insertion fails (for example, in a bounded queue), it throws an exception.
+
+---
+
+# offer()
+
+Also inserts an element.
+
+```java
+queue.offer("Docker");
+```
+
+Difference
+
+If insertion fails
+
+```
+Returns false
+```
+
+instead of throwing an exception.
+
+---
+
+# remove()
+
+Removes and returns the head element.
+
+Example
+
+```
+Queue
+
+A
+B
+C
+```
+
+```java
+queue.remove();
+```
+
+Returns
+
+```
+A
+```
+
+Queue becomes
+
+```
+B
+C
+```
+
+If the queue is empty
+
+```
+NoSuchElementException
+```
+
+is thrown.
+
+---
+
+# poll()
+
+Also removes the head element.
+
+```java
+queue.poll();
+```
+
+Difference
+
+If the queue is empty
+
+```
+Returns null
+```
+
+instead of throwing an exception.
+
+---
+
+# element()
+
+Returns the head element without removing it.
+
+Example
+
+```
+Queue
+
+A
+B
+C
+```
+
+```java
+queue.element();
+```
+
+Returns
+
+```
+A
+```
+
+Queue remains unchanged.
+
+If the queue is empty
+
+```
+NoSuchElementException
+```
+
+is thrown.
+
+---
+
+# peek()
+
+Also returns the head element without removing it.
+
+```java
+queue.peek();
+```
+
+Returns
+
+```
+A
+```
+
+Queue remains unchanged.
+
+If the queue is empty
+
+```
+Returns null
+```
+
+---
+
+# Queue Operations Summary
+
+Initial Queue
+
+```
+Front
+
+↓
+
+A
+
+B
+
+C
+
+↑
+
+Rear
+```
+
+| Method | Result | Queue After |
+|---------|--------|-------------|
+| offer("D") | Adds D | A B C D |
+| add("D") | Adds D | A B C D |
+| peek() | Returns A | A B C |
+| element() | Returns A | A B C |
+| poll() | Removes A | B C |
+| remove() | Removes A | B C |
+
+---
+
+# Exception vs Special Value
+
+| Method | Empty Queue |
+|----------|-------------|
+| add() | Exception (if insertion fails) |
+| offer() | false (if insertion fails) |
+| remove() | NoSuchElementException |
+| poll() | null |
+| element() | NoSuchElementException |
+| peek() | null |
+
+**Best Practice**
+
+- Prefer `offer()` over `add()`.
+- Prefer `poll()` over `remove()`.
+- Prefer `peek()` over `element()`.
+
+These methods avoid unnecessary exceptions.
+
+---
+
+# Example
+
+```java
+Queue<String> queue = new LinkedList<>();
+
+queue.offer("Java");
+queue.offer("Spring");
+queue.offer("Docker");
+
+System.out.println(queue);
+
+System.out.println(queue.peek());
+
+System.out.println(queue.poll());
+
+System.out.println(queue);
+```
+
+Output
+
+```
+[Java, Spring, Docker]
+
+Java
+
+Java
+
+[Spring, Docker]
+```
+
+Notice
+
+- `peek()` reads the head.
+- `poll()` removes the head.
+
+---
+
+# Queue vs List
+
+| Feature | Queue | List |
+|----------|-------|------|
+| Ordering | FIFO | Insertion Order |
+| Duplicates | Allowed | Allowed |
+| Index-Based Access | No | Yes |
+| Primary Purpose | Processing | General Storage |
+| Front Removal | Optimized | Expensive in ArrayList |
+
+---
+
+# Common Queue Implementations
+
+| Implementation | Description |
+|----------------|-------------|
+| LinkedList | General-purpose queue implementation |
+| ArrayDeque | Faster implementation for most queue operations |
+| PriorityQueue | Orders elements based on priority instead of FIFO |
+
+---
+
+# Real-World Applications
+
+Queue is commonly used in
+
+- Printer queues
+- Task scheduling
+- CPU scheduling
+- Customer service systems
+- Breadth-First Search (BFS)
+- Job processing
+- Request processing
+- Message queues
+
+---
+
+# Common Interview Mistakes
+
+❌ Queue always means FIFO.
+
+✔ Most queues are FIFO, but `PriorityQueue` processes elements by priority.
+
+---
+
+❌ `peek()` removes an element.
+
+✔ It only retrieves the head.
+
+---
+
+❌ `poll()` throws an exception if the queue is empty.
+
+✔ It returns `null`.
+
+---
+
+❌ `remove()` returns `null` if the queue is empty.
+
+✔ It throws `NoSuchElementException`.
+
+---
+
+# Key Takeaways
+
+- Queue represents FIFO processing.
+- Elements are inserted at the rear and removed from the front.
+- `offer()` and `poll()` are generally preferred over `add()` and `remove()`.
+- `peek()` retrieves the head without removing it.
+- Queue does not support index-based access.
+- Common implementations include `LinkedList`, `ArrayDeque`, and `PriorityQueue`.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is a Queue?
+2. Why was the Queue interface introduced?
+3. Explain FIFO.
+4. What is the difference between `add()` and `offer()`?
+5. What is the difference between `remove()` and `poll()`?
+6. What is the difference between `element()` and `peek()`?
+
+## Intermediate
+
+7. Why is `ArrayList` not suitable for queue operations?
+8. Why are `offer()`, `poll()`, and `peek()` preferred in production code?
+9. Compare Queue and List.
+10. Name the common implementations of Queue.
+11. Does Queue support index-based access?
+12. Name some real-world applications of Queue.
+
+# Chapter 12 — PriorityQueue
+
+`PriorityQueue` is an implementation of the **Queue** interface that processes elements based on **priority** instead of insertion order.
+
+Unlike a normal queue, which follows **FIFO (First In, First Out)**, a `PriorityQueue` always removes the **highest-priority** element first.
+
+By default, Java treats the **smallest element as the highest priority**.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+    Queue
+      │
+PriorityQueue
+```
+
+---
+
+# Why Was PriorityQueue Introduced?
+
+Some real-world applications cannot process elements in the order they arrive.
+
+Example
+
+Hospital Emergency Room
+
+```
+Arrival Order
+
+Patient A - Minor Injury
+Patient B - Heart Attack
+Patient C - Fever
+Patient D - Accident
+```
+
+If FIFO is followed
+
+```
+A
+B
+C
+D
+```
+
+Patient A is treated first.
+
+This is not practical.
+
+Instead, patients are treated based on **priority**.
+
+```
+Heart Attack
+Accident
+Fever
+Minor Injury
+```
+
+To support this behavior, Java introduced **PriorityQueue**.
+
+---
+
+# What is PriorityQueue?
+
+**Definition**
+
+> A `PriorityQueue` is a Queue implementation that orders elements according to their priority instead of insertion order.
+
+---
+
+# Characteristics
+
+- Allows duplicate elements.
+- Does **not** preserve insertion order.
+- Does **not** follow FIFO.
+- Automatically orders elements based on priority.
+- By default behaves as a **Min Heap**.
+- Does not allow `null`.
+- Backed internally by a **Binary Heap**.
+- Average insertion and removal complexity is **O(log n)**.
+
+---
+
+# Example
+
+```java
+Queue<Integer> pq = new PriorityQueue<>();
+
+pq.offer(50);
+pq.offer(20);
+pq.offer(70);
+pq.offer(10);
+pq.offer(40);
+
+System.out.println(pq);
+```
+
+Possible Output
+
+```
+[10, 20, 70, 50, 40]
+```
+
+The output is **not guaranteed to be fully sorted**.
+
+The only guarantee is
+
+```
+The head element has the highest priority.
+```
+
+---
+
+# Removing Elements
+
+```java
+while (!pq.isEmpty()) {
+    System.out.println(pq.poll());
+}
+```
+
+Output
+
+```
+10
+20
+40
+50
+70
+```
+
+Although the internal structure is not fully sorted, removing elements one by one produces sorted output.
+
+---
+
+# Natural Ordering
+
+PriorityQueue uses the **natural ordering** of elements.
+
+Example
+
+```java
+Queue<String> pq = new PriorityQueue<>();
+
+pq.offer("Java");
+pq.offer("Spring");
+pq.offer("Docker");
+
+while (!pq.isEmpty()) {
+    System.out.println(pq.poll());
+}
+```
+
+Output
+
+```
+Docker
+Java
+Spring
+```
+
+Since `String` implements `Comparable`, elements are sorted alphabetically.
+
+---
+
+# Internal Data Structure
+
+PriorityQueue is implemented using a **Binary Heap**.
+
+Conceptual representation
+
+```
+          10
+        /    \
+      20      70
+     /  \
+   50   40
+```
+
+This is **not** a Binary Search Tree.
+
+It follows the **Heap Property**.
+
+For a Min Heap
+
+```
+Parent <= Children
+```
+
+Only the root is guaranteed to contain the highest-priority element.
+
+---
+
+# Min Heap (Default)
+
+Example
+
+```java
+Queue<Integer> pq = new PriorityQueue<>();
+
+pq.offer(8);
+pq.offer(3);
+pq.offer(10);
+pq.offer(1);
+
+System.out.println(pq.peek());
+```
+
+Output
+
+```
+1
+```
+
+The smallest element is always at the root.
+
+---
+
+# Max Heap
+
+To retrieve the largest element first, provide a custom comparator.
+
+```java
+Queue<Integer> pq =
+        new PriorityQueue<>(Comparator.reverseOrder());
+
+pq.offer(20);
+pq.offer(50);
+pq.offer(10);
+pq.offer(40);
+
+while (!pq.isEmpty()) {
+    System.out.println(pq.poll());
+}
+```
+
+Output
+
+```
+50
+40
+20
+10
+```
+
+The queue now behaves as a **Max Heap**.
+
+---
+
+# Custom Objects
+
+Suppose
+
+```java
+class Task {
+
+    int priority;
+    String name;
+
+}
+```
+
+Then
+
+```java
+PriorityQueue<Task> tasks =
+        new PriorityQueue<>();
+```
+
+throws
+
+```
+ClassCastException
+```
+
+because Java does not know how to compare two `Task` objects.
+
+To fix this
+
+- Implement `Comparable`
+- OR provide a `Comparator`
+
+Example
+
+```java
+Comparator<Task> byPriority =
+        Comparator.comparingInt(Task::getPriority);
+
+PriorityQueue<Task> tasks =
+        new PriorityQueue<>(byPriority);
+```
+
+---
+
+# Time Complexity
+
+| Operation | Complexity |
+|-----------|------------|
+| offer() | O(log n) |
+| poll() | O(log n) |
+| peek() | O(1) |
+| contains() | O(n) |
+
+---
+
+# PriorityQueue vs Queue (LinkedList)
+
+| Feature | LinkedList Queue | PriorityQueue |
+|----------|------------------|---------------|
+| Processing Order | FIFO | Priority |
+| Insertion Order | Preserved | Not Preserved |
+| Head Element | First Inserted | Highest Priority |
+| Internal Structure | Linked List | Binary Heap |
+
+---
+
+# PriorityQueue vs TreeSet
+
+| Feature | PriorityQueue | TreeSet |
+|----------|---------------|----------|
+| Duplicates | Allowed | Not Allowed |
+| Fully Sorted | No | Yes |
+| Internal Structure | Binary Heap | Red-Black Tree |
+| add() Complexity | O(log n) | O(log n) |
+| peek()/first() | Highest Priority | Smallest Element |
+
+---
+
+# Real-World Applications
+
+PriorityQueue is used in
+
+- CPU scheduling
+- Task scheduling
+- Dijkstra's shortest path algorithm
+- Huffman Coding
+- A* Search
+- Event simulation
+- Load balancing
+- Top-K largest/smallest problems
+
+---
+
+# Common Interview Mistakes
+
+❌ PriorityQueue is always sorted.
+
+✔ Only the head element is guaranteed to have the highest priority.
+
+---
+
+❌ PriorityQueue preserves insertion order.
+
+✔ It does not.
+
+---
+
+❌ PriorityQueue follows FIFO.
+
+✔ It processes elements based on priority.
+
+---
+
+❌ PriorityQueue is implemented using a Binary Search Tree.
+
+✔ It is implemented using a Binary Heap.
+
+---
+
+# Key Takeaways
+
+- PriorityQueue is a Queue implementation that processes elements by priority.
+- It does not follow FIFO.
+- By default, it behaves as a Min Heap.
+- A custom Comparator can be used to create a Max Heap.
+- Allows duplicate elements.
+- Does not allow `null`.
+- Internally backed by a Binary Heap.
+- `peek()` is O(1).
+- `offer()` and `poll()` are O(log n).
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is a PriorityQueue?
+2. Why was PriorityQueue introduced?
+3. Does PriorityQueue follow FIFO?
+4. Does PriorityQueue preserve insertion order?
+5. Does PriorityQueue allow duplicate elements?
+6. Does PriorityQueue allow `null`?
+
+## Intermediate
+
+7. What internal data structure does PriorityQueue use?
+8. Why is PriorityQueue not fully sorted?
+9. Explain Min Heap and Max Heap.
+10. How do you create a Max Heap?
+11. Why does PriorityQueue throw `ClassCastException` for custom objects?
+12. Compare PriorityQueue and TreeSet.
+
+# Chapter 13 — Deque Interface
+
+A **Deque (Double Ended Queue)** is an extension of the **Queue** interface that allows insertion, removal, and retrieval of elements from **both the front and the rear**.
+
+Unlike a normal Queue, which supports insertion at one end and removal at the other, a Deque supports operations at **both ends**.
+
+Hierarchy
+
+```
+Iterable
+      │
+Collection
+      │
+    Queue
+      │
+    Deque
+      │
+ ┌────┴─────────┐
+ │              │
+ArrayDeque   LinkedList
+```
+
+---
+
+# Why Was Deque Introduced?
+
+A normal Queue supports
+
+- Insert at the rear
+- Remove from the front
+
+Example
+
+```
+Front
+
+↓
+
+A
+
+B
+
+C
+
+↑
+
+Rear
+```
+
+Queue Operations
+
+```
+offer()
+
+↓
+
+Rear
+```
+
+```
+poll()
+
+↓
+
+Front
+```
+
+Suppose an application also needs
+
+- Insert at the front
+- Remove from the rear
+
+A Queue cannot perform these operations.
+
+To solve this problem, Java introduced **Deque (Double Ended Queue)**.
+
+---
+
+# What is Deque?
+
+**Definition**
+
+> A Deque is a linear collection that allows insertion, removal, and retrieval of elements at both the front and rear.
+
+Deque stands for
+
+```
+Double Ended Queue
+```
+
+Deque extends the Queue interface and provides additional operations for both ends.
+
+---
+
+# Characteristics
+
+- Allows insertion at both ends.
+- Allows removal at both ends.
+- Allows retrieval from both ends.
+- Usually allows duplicate elements.
+- Does not support index-based access.
+- Can behave as both a Queue and a Stack.
+
+---
+
+# Visual Representation
+
+```
+Front
+
+↓
+
+A
+
+B
+
+C
+
+↑
+
+Rear
+```
+
+Possible operations
+
+```
+addFirst()
+
+↓
+
+Front
+```
+
+```
+addLast()
+
+↓
+
+Rear
+```
+
+```
+removeFirst()
+
+↓
+
+Front
+```
+
+```
+removeLast()
+
+↓
+
+Rear
+```
+
+Elements can be inserted and removed from either end.
+
+---
+
+# Deque Methods
+
+| Operation | Front | Rear |
+|-----------|-------|------|
+| Insert | addFirst() | addLast() |
+| Insert (Safe) | offerFirst() | offerLast() |
+| Remove | removeFirst() | removeLast() |
+| Remove (Safe) | pollFirst() | pollLast() |
+| Retrieve | getFirst() | getLast() |
+| Retrieve (Safe) | peekFirst() | peekLast() |
+
+Like Queue, Deque provides
+
+- Exception-based methods
+- Safe methods that return special values
+
+---
+
+# Adding Elements
+
+```java
+Deque<String> deque = new ArrayDeque<>();
+
+deque.addFirst("B");
+deque.addFirst("A");
+
+deque.addLast("C");
+deque.addLast("D");
+
+System.out.println(deque);
+```
+
+Output
+
+```
+[A, B, C, D]
+```
+
+Final structure
+
+```
+Front
+
+↓
+
+A
+
+B
+
+C
+
+D
+
+↑
+
+Rear
+```
+
+---
+
+# Removing Elements
+
+Current Deque
+
+```
+A
+
+B
+
+C
+
+D
+```
+
+```java
+deque.removeFirst();
+```
+
+Removes
+
+```
+A
+```
+
+Remaining
+
+```
+B
+
+C
+
+D
+```
+
+```java
+deque.removeLast();
+```
+
+Removes
+
+```
+D
+```
+
+Remaining
+
+```
+B
+
+C
+```
+
+---
+
+# Peek Operations
+
+Current Deque
+
+```
+A
+
+B
+
+C
+```
+
+```java
+deque.peekFirst();
+```
+
+Returns
+
+```
+A
+```
+
+Deque remains unchanged.
+
+```java
+deque.peekLast();
+```
+
+Returns
+
+```
+C
+```
+
+Deque remains unchanged.
+
+---
+
+# Exception vs Safe Methods
+
+| Method | Empty Deque |
+|----------|-------------|
+| removeFirst() | NoSuchElementException |
+| pollFirst() | null |
+| getFirst() | NoSuchElementException |
+| peekFirst() | null |
+| removeLast() | NoSuchElementException |
+| pollLast() | null |
+| getLast() | NoSuchElementException |
+| peekLast() | null |
+
+**Best Practice**
+
+Prefer
+
+- offerFirst()
+- offerLast()
+- pollFirst()
+- pollLast()
+- peekFirst()
+- peekLast()
+
+These methods avoid unnecessary exceptions.
+
+---
+
+# Deque as a Queue
+
+Queue behavior
+
+- Insert at the rear
+- Remove from the front
+
+```java
+Deque<Integer> deque = new ArrayDeque<>();
+
+deque.offerLast(10);
+deque.offerLast(20);
+deque.offerLast(30);
+
+System.out.println(deque.pollFirst());
+```
+
+Output
+
+```
+10
+```
+
+Deque behaves exactly like a FIFO Queue.
+
+---
+
+# Deque as a Stack
+
+Stack behavior
+
+- Insert at the top
+- Remove from the top
+
+Deque provides stack operations.
+
+```java
+Deque<Integer> stack = new ArrayDeque<>();
+
+stack.push(10);
+stack.push(20);
+stack.push(30);
+
+System.out.println(stack.pop());
+```
+
+Output
+
+```
+30
+```
+
+Deque behaves like a LIFO Stack.
+
+---
+
+# Stack Methods Provided by Deque
+
+| Stack Method | Equivalent Deque Method |
+|---------------|-------------------------|
+| push(e) | addFirst(e) |
+| pop() | removeFirst() |
+| peek() | peekFirst() |
+
+This is why `ArrayDeque` is generally preferred over the legacy `Stack` class.
+
+---
+
+# Time Complexity
+
+For common implementations (`ArrayDeque` and `LinkedList`)
+
+| Operation | Complexity |
+|-----------|------------|
+| addFirst() | O(1) |
+| addLast() | O(1) |
+| removeFirst() | O(1) |
+| removeLast() | O(1) |
+| peekFirst() | O(1) |
+| peekLast() | O(1) |
+
+---
+
+# Queue vs Deque
+
+| Feature | Queue | Deque |
+|----------|-------|--------|
+| Insert Front | No | Yes |
+| Insert Rear | Yes | Yes |
+| Remove Front | Yes | Yes |
+| Remove Rear | No | Yes |
+| FIFO | Yes | Yes |
+| LIFO | No | Yes |
+
+Deque is essentially a **superset of Queue**.
+
+---
+
+# Deque vs Stack
+
+| Feature | Stack | Deque |
+|----------|--------|--------|
+| LIFO | Yes | Yes |
+| FIFO | No | Yes |
+| Double Ended | No | Yes |
+| Recommended | No (Legacy) | Yes |
+
+---
+
+# Common Implementations
+
+| Implementation | Internal Structure |
+|----------------|--------------------|
+| ArrayDeque | Resizable Circular Array |
+| LinkedList | Doubly Linked List |
+
+---
+
+# Real-World Applications
+
+Deque is commonly used in
+
+- Browser Back/Forward history
+- Undo/Redo operations
+- Sliding Window algorithms
+- Palindrome checking
+- Queue implementation
+- Stack implementation
+- Task scheduling
+
+---
+
+# Common Interview Mistakes
+
+❌ Deque only behaves like a Queue.
+
+✔ It can behave as both a Queue and a Stack.
+
+---
+
+❌ Deque is an implementation class.
+
+✔ It is an interface.
+
+---
+
+❌ Only Stack provides push() and pop().
+
+✔ Deque also provides push(), pop(), and peek().
+
+---
+
+❌ Queue and Deque are unrelated.
+
+✔ Deque extends the Queue interface.
+
+---
+
+# Key Takeaways
+
+- Deque stands for **Double Ended Queue**.
+- It extends the Queue interface.
+- Supports insertion, removal, and retrieval from both ends.
+- Can behave as both a FIFO Queue and a LIFO Stack.
+- `ArrayDeque` and `LinkedList` are common implementations.
+- `ArrayDeque` is generally preferred over the legacy `Stack` class.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is a Deque?
+2. What does Deque stand for?
+3. Why was the Deque interface introduced?
+4. Does Deque extend Queue?
+5. Can Deque be used as a Stack?
+
+## Intermediate
+
+6. Explain the difference between addFirst() and offerFirst().
+7. Explain the difference between removeLast() and pollLast().
+8. Why is Deque preferred over the Stack class?
+9. Compare Queue and Deque.
+10. Name the common implementations of Deque.
+11. What are the time complexities of common Deque operations?
+12. Name some real-world applications of Deque.
+
+# ArrayDeque Resizing Mechanism
+
+`ArrayDeque` is backed by a **resizable circular array**.
+
+Like `ArrayList`, when the internal array becomes full, Java allocates a **larger array**, copies the existing elements into it, and continues using the new array.
+
+However, because `ArrayDeque` uses a **circular array**, the copying process is different from `ArrayList`.
+
+---
+
+# Does ArrayDeque Grow Like ArrayList?
+
+Conceptually **Yes**.
+
+Both classes
+
+- Allocate a larger array.
+- Copy the existing elements.
+- Discard the old array.
+- Continue using the new array.
+
+However, the **growth strategy is different**.
+
+### ArrayList
+
+Typically grows by approximately
+
+```
+Current Capacity × 1.5
+```
+
+Example
+
+```
+10
+
+↓
+
+15
+
+↓
+
+22
+
+↓
+
+33
+```
+
+---
+
+### ArrayDeque
+
+`ArrayDeque` also grows automatically, but **its exact growth algorithm is an implementation detail of the JDK** and should not be relied upon.
+
+For interviews, remember:
+
+> When the internal array is full, `ArrayDeque` allocates a larger array and copies the elements.
+
+---
+
+# ArrayList Resizing
+
+Initial Capacity
+
+```
+10
+```
+
+```
+[A][B][C][D][E][F][G][H][I][J]
+```
+
+Adding one more element
+
+```java
+list.add("K");
+```
+
+Internal Steps
+
+### Step 1
+
+Allocate a larger array.
+
+```
+10
+
+↓
+
+15
+```
+
+### Step 2
+
+Copy all elements.
+
+```
+Old Array
+
+A B C D E F G H I J
+
+↓
+
+New Array
+
+A B C D E F G H I J
+```
+
+### Step 3
+
+Discard the old array.
+
+---
+
+# ArrayDeque Resizing
+
+Suppose the circular array has capacity **8**.
+
+```
+Index
+
+0 1 2 3 4 5 6 7
+```
+
+After several insertions and removals
+
+```
+[E][F][ ][ ][A][B][C][D]
+```
+
+Notice
+
+The **physical layout**
+
+```
+E F _ _ A B C D
+```
+
+The **logical order**
+
+```
+A → B → C → D → E → F
+```
+
+These are different because the array wraps around.
+
+---
+
+# Why Can't Java Simply Copy the Array?
+
+If Java copied the physical memory directly
+
+```
+[E][F][ ][ ][A][B][C][D]
+```
+
+the logical order would still be split.
+
+Instead, Java copies the elements **in logical queue order**.
+
+Result
+
+```
+[A][B][C][D][E][F][ ][ ][ ][ ]
+```
+
+After resizing
+
+```
+head = 0
+
+tail = size
+```
+
+The wrapped structure disappears.
+
+---
+
+# Internal Resizing Steps
+
+When the deque becomes full
+
+### Step 1
+
+Allocate a larger array.
+
+### Step 2
+
+Traverse the deque from **head** to **tail**.
+
+### Step 3
+
+Copy the elements into the new array in logical order.
+
+```
+Old
+
+[E][F][ ][ ][A][B][C][D]
+
+↓
+
+New
+
+[A][B][C][D][E][F]
+```
+
+### Step 4
+
+Reset
+
+```
+head = 0
+
+tail = size
+```
+
+### Step 5
+
+Discard the old array.
+
+---
+
+# Time Complexity
+
+Normal insertion
+
+```
+O(1)
+```
+
+Insertion during resizing
+
+```
+O(n)
+```
+
+Therefore
+
+```
+Insertion = O(1) amortized
+```
+
+---
+
+# ArrayList vs ArrayDeque Resizing
+
+| Feature | ArrayList | ArrayDeque |
+|----------|-----------|------------|
+| Internal Structure | Dynamic Array | Circular Dynamic Array |
+| Resizes Automatically | Yes | Yes |
+| Copies Elements | Yes | Yes |
+| Copy Order | Physical Order | Logical Queue Order |
+| Resets Head/Tail | No | Yes |
+| Average Insert Complexity | O(1) Amortized | O(1) Amortized |
+
+---
+
+# Visual Summary
+
+### Before Resize
+
+```
+Capacity = 8
+
+Index
+
+0 1 2 3 4 5 6 7
+
+[E][F][ ][ ][A][B][C][D]
+```
+
+Logical order
+
+```
+A → B → C → D → E → F
+```
+
+---
+
+### After Resize
+
+```
+Capacity = Larger
+
+[A][B][C][D][E][F][ ][ ][ ][ ]
+```
+
+```
+head = 0
+
+tail = size
+```
+
+---
+
+# Key Takeaways
+
+- `ArrayDeque` uses a **resizable circular array**.
+- When full, it allocates a larger array.
+- Unlike `ArrayList`, it copies elements in **logical queue order**, not physical memory order.
+- After copying, `head` is reset to `0` and `tail` points after the last element.
+- Resizing takes **O(n)** time.
+- Most insertions remain **O(1) amortized**.
+
+---
+
+# Interview Questions
+
+1. Does `ArrayDeque` resize automatically?
+2. Is the resizing mechanism similar to `ArrayList`?
+3. Why can't `ArrayDeque` simply copy the underlying array?
+4. What is the difference between physical order and logical order in a circular array?
+5. What happens to the `head` and `tail` after resizing?
+6. Why is insertion still considered **O(1) amortized**?
+
