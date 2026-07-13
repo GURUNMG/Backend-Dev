@@ -6942,3 +6942,4024 @@ tail = size
 5. What happens to the `head` and `tail` after resizing?
 6. Why is insertion still considered **O(1) amortized**?
 
+# Day 5 — Chapter 16: Hashing Fundamentals
+
+## Why Was Hashing Introduced?
+
+Suppose employee records are stored in an array.
+
+```
+John
+Alice
+Bob
+David
+Emma
+```
+
+Searching for "Bob" requires checking each element.
+
+```
+John ❌
+Alice ❌
+Bob ✅
+```
+
+Time Complexity
+
+```
+O(n)
+```
+
+As the number of elements grows, searching becomes slow.
+
+Hashing was introduced to provide **fast lookup**.
+
+---
+
+# What is Hashing?
+
+**Definition**
+
+> Hashing is the technique of converting a key into a fixed-size integer (hash value) so that data can be stored and retrieved efficiently.
+
+Flow
+
+```
+Key
+
+↓
+
+Hash Function
+
+↓
+
+Hash Value
+
+↓
+
+Bucket
+
+↓
+
+Object
+```
+
+---
+
+# Real-World Analogy
+
+Apartment Mailboxes
+
+```
+Apartment Number
+
+↓
+
+Mailbox Number
+
+↓
+
+Letter
+```
+
+Instead of searching every mailbox, you directly go to the correct mailbox.
+
+Hashing works in the same way.
+
+---
+
+# Components of Hashing
+
+```
+Key
+
+↓
+
+Hash Function
+
+↓
+
+Hash Value
+
+↓
+
+Bucket
+```
+
+---
+
+# 1. Key
+
+The object used to identify data.
+
+Example
+
+```
+101
+102
+103
+```
+
+---
+
+# 2. Hash Function
+
+Converts the key into an integer.
+
+```
+101
+
+↓
+
+5829134
+```
+
+The same key always produces the same hash value (as long as the object doesn't change in a way that affects hashing).
+
+---
+
+# 3. Hash Value
+
+The integer returned by the hash function.
+
+Example
+
+```
+15423879
+```
+
+This value is **not** the storage location.
+
+It is used to determine the bucket.
+
+---
+
+# 4. Bucket
+
+A logical storage location inside the hash table.
+
+Example
+
+```
+Bucket 0
+
+Bucket 1
+
+Bucket 2
+
+...
+
+Bucket 15
+```
+
+---
+
+# Why Can't Java Use the Hash Value Directly?
+
+Suppose
+
+```
+hashCode()
+
+↓
+
+1456789345
+```
+
+Creating billions of buckets would waste memory.
+
+Instead, Java converts the hash value into a valid bucket index.
+
+Conceptually
+
+```
+Bucket Index
+
+=
+
+Hash Value % Number of Buckets
+```
+
+Example
+
+```
+1456789345 % 16
+
+=
+
+1
+```
+
+The object is stored in **Bucket 1**.
+
+> **Note:** Modern `HashMap` uses a bitwise operation (`(n - 1) & hash`) instead of `%`, because its capacity is always a power of two. We'll study this in the `HashMap` chapter.
+
+---
+
+# Complete Flow
+
+```
+Key
+
+↓
+
+hashCode()
+
+↓
+
+Hash Value
+
+↓
+
+Bucket Index
+
+↓
+
+Bucket
+
+↓
+
+Store Object
+```
+
+Searching follows the same path.
+
+---
+
+# Why Is Hashing Fast?
+
+Without hashing
+
+```
+A
+
+↓
+
+B
+
+↓
+
+C
+
+↓
+
+D
+```
+
+Search Complexity
+
+```
+O(n)
+```
+
+With hashing
+
+```
+Key
+
+↓
+
+Bucket
+
+↓
+
+Object
+```
+
+Average Search Complexity
+
+```
+O(1)
+```
+
+---
+
+# Collision
+
+Sometimes different keys map to the same bucket.
+
+Example
+
+```
+Key A
+
+↓
+
+Bucket 4
+```
+
+```
+Key B
+
+↓
+
+Bucket 4
+```
+
+This is called a **collision**.
+
+Example
+
+```
+Bucket 4
+
+↓
+
+John
+
+Alice
+```
+
+Collisions are normal.
+
+---
+
+# Does hashCode() Need to Be Unique?
+
+No.
+
+Different objects can produce
+
+- The same hash value.
+- The same bucket.
+
+This is expected.
+
+---
+
+# Where Does hashCode() Fit?
+
+Every Java object inherits
+
+```java
+hashCode()
+```
+
+Its purpose is to generate the hash value used during hashing.
+
+---
+
+# Where Does equals() Fit?
+
+Hashing first finds the correct bucket.
+
+If multiple objects exist inside the bucket, Java uses
+
+```java
+equals()
+```
+
+to identify the correct key.
+
+Flow
+
+```
+Key
+
+↓
+
+hashCode()
+
+↓
+
+Bucket
+
+↓
+
+equals()
+
+↓
+
+Correct Entry
+```
+
+---
+
+# hashCode() vs equals()
+
+| hashCode() | equals() |
+|-------------|----------|
+| Finds the bucket | Finds the correct object inside the bucket |
+| Returns an integer | Returns true or false |
+| Fast lookup | Exact comparison |
+
+Think of them as working together.
+
+- `hashCode()` answers **"Which bucket?"**
+- `equals()` answers **"Which object?"**
+
+---
+
+# Common Interview Mistakes
+
+❌ Hashing guarantees no collisions.
+
+✔ Collisions are expected.
+
+---
+
+❌ Hash value is the bucket number.
+
+✔ The hash value is converted into a bucket index.
+
+---
+
+❌ hashCode() uniquely identifies every object.
+
+✔ Different objects may have the same hash code.
+
+---
+
+❌ equals() is called before hashCode().
+
+✔ Java first computes the hash, then uses equals() only when required.
+
+---
+
+# Key Takeaways
+
+- Hashing provides fast lookup.
+- A hash function converts a key into a hash value.
+- Hash values are mapped to buckets.
+- Buckets store the data.
+- Collisions are normal.
+- hashCode() generates the hash value.
+- equals() identifies the correct object inside a bucket.
+- Average lookup complexity is **O(1)**.
+
+---
+
+# Interview Questions
+
+1. What is hashing?
+2. Why was hashing introduced?
+3. What is a hash function?
+4. What is a bucket?
+5. Why is hashing faster than linear search?
+6. What is a collision?
+7. Does hashCode() guarantee uniqueness?
+8. Why are hashCode() and equals() both needed?
+9. Explain the complete hashing flow.
+10. What is the average time complexity of hashing?
+```
+
+# Day 5 — Chapter 17: `hashCode()` and `equals()`
+
+## Why Do We Need `hashCode()` and `equals()`?
+
+Suppose we have two `Student` objects.
+
+```java
+Student s1 = new Student(101, "Guru");
+Student s2 = new Student(101, "Guru");
+```
+
+Memory
+
+```
+        Heap
+
++-------------------+
+| id = 101          |
+| name = Guru       |
++-------------------+
+        ^
+        |
+       s1
+
+
++-------------------+
+| id = 101          |
+| name = Guru       |
++-------------------+
+        ^
+        |
+       s2
+```
+
+Although both objects contain the same data, they are **different objects** stored at different memory locations.
+
+---
+
+# The `==` Operator
+
+The `==` operator compares **references**, not object contents.
+
+```java
+System.out.println(s1 == s2);
+```
+
+Output
+
+```
+false
+```
+
+Explanation
+
+```
+s1 -------> Object A
+
+s2 -------> Object B
+```
+
+Different references mean the result is `false`.
+
+---
+
+# Default `equals()`
+
+```java
+System.out.println(s1.equals(s2));
+```
+
+Output
+
+```
+false
+```
+
+Why?
+
+Because `Student` inherits `equals()` from the `Object` class.
+
+Conceptually, the default implementation is
+
+```java
+public boolean equals(Object obj) {
+    return this == obj;
+}
+```
+
+Therefore
+
+- `==` compares references.
+- Default `equals()` also compares references.
+
+---
+
+# Why Override `equals()`?
+
+Suppose the business rule is
+
+> Two students are equal if their **ID** is the same.
+
+The default implementation cannot know this rule.
+
+We must override `equals()`.
+
+---
+
+# Overriding `equals()`
+
+```java
+import java.util.Objects;
+
+class Student {
+
+    private int id;
+    private String name;
+
+    Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj)
+            return true;
+
+        if (obj == null)
+            return false;
+
+        if (getClass() != obj.getClass())
+            return false;
+
+        Student other = (Student) obj;
+
+        return this.id == other.id;
+    }
+}
+```
+
+Now
+
+```java
+Student s1 = new Student(101, "Guru");
+Student s2 = new Student(101, "Alice");
+
+System.out.println(s1.equals(s2));
+```
+
+Output
+
+```
+true
+```
+
+Because
+
+```
+101 == 101
+```
+
+---
+
+# Understanding `this`
+
+When we execute
+
+```java
+s1.equals(s2);
+```
+
+Internally
+
+```
+this
+
+↓
+
+s1
+```
+
+```
+obj
+
+↓
+
+s2
+```
+
+The statement
+
+```java
+return this.id == other.id;
+```
+
+becomes
+
+```java
+101 == 101
+```
+
+Result
+
+```
+true
+```
+
+---
+
+# What is `hashCode()`?
+
+Every Java object inherits
+
+```java
+hashCode()
+```
+
+from the `Object` class.
+
+Its purpose is to generate an integer called the **hash code**.
+
+Example
+
+```java
+System.out.println(s1.hashCode());
+```
+
+Output
+
+```
+1867083167
+```
+
+The exact number is not important.
+
+It is used internally by hash-based collections.
+
+---
+
+# Default `hashCode()`
+
+The default implementation generates a hash based on the object's identity.
+
+Therefore
+
+```java
+Student s1 = new Student(101, "Guru");
+Student s2 = new Student(101, "Guru");
+```
+
+Usually
+
+```java
+s1.hashCode() != s2.hashCode();
+```
+
+because they are different objects.
+
+---
+
+# Why Override `hashCode()`?
+
+Suppose
+
+```java
+s1.equals(s2)
+```
+
+returns
+
+```
+true
+```
+
+If
+
+```java
+s1.hashCode()
+
+!=
+
+s2.hashCode()
+```
+
+then `HashMap` may place them into different buckets.
+
+As a result, Java may never compare them using `equals()`.
+
+Therefore Java requires
+
+> **Equal objects must produce the same hash code.**
+
+---
+
+# Overriding `hashCode()`
+
+```java
+@Override
+public int hashCode() {
+    return Integer.hashCode(id);
+}
+```
+
+or
+
+```java
+@Override
+public int hashCode() {
+    return Objects.hash(id);
+}
+```
+
+Now
+
+```java
+Student s1 = new Student(101, "Guru");
+Student s2 = new Student(101, "Alice");
+```
+
+Both produce the same hash code because they have the same `id`.
+
+---
+
+# The `equals()` and `hashCode()` Contract
+
+## Rule 1
+
+If
+
+```java
+obj1.equals(obj2)
+```
+
+returns
+
+```
+true
+```
+
+then
+
+```java
+obj1.hashCode() == obj2.hashCode()
+```
+
+must also be true.
+
+---
+
+## Rule 2
+
+If two objects have different hash codes, they cannot be equal.
+
+---
+
+## Rule 3
+
+Two different objects **may** have the same hash code.
+
+This is called a **collision**.
+
+Example
+
+```
+Student A
+
+↓
+
+hashCode = 100
+```
+
+```
+Student B
+
+↓
+
+hashCode = 100
+```
+
+The objects are different but happen to share the same hash code.
+
+---
+
+# How HashMap Uses `hashCode()` and `equals()`
+
+Suppose we execute
+
+```java
+map.get(student);
+```
+
+HashMap performs the following steps.
+
+### Step 1
+
+Compute
+
+```java
+student.hashCode();
+```
+
+↓
+
+```
+1432
+```
+
+---
+
+### Step 2
+
+Convert the hash code into a bucket index.
+
+↓
+
+```
+Bucket 8
+```
+
+---
+
+### Step 3
+
+Search only inside Bucket 8.
+
+---
+
+### Step 4
+
+Compare keys using
+
+```java
+equals()
+```
+
+Internally
+
+```java
+storedKey.equals(requestedKey);
+```
+
+---
+
+### Step 5
+
+If `equals()` returns `true`, the value is returned.
+
+---
+
+# Complete Flow
+
+```
+Key
+
+↓
+
+hashCode()
+
+↓
+
+Hash Value
+
+↓
+
+Bucket Index
+
+↓
+
+Bucket
+
+↓
+
+equals()
+
+↓
+
+Correct Entry
+
+↓
+
+Return Value
+```
+
+---
+
+# Why Both Methods Are Needed
+
+Think of them as performing different jobs.
+
+| Method | Responsibility |
+|----------|---------------|
+| `hashCode()` | Determines the bucket where the object should be searched. |
+| `equals()` | Determines whether two objects represent the same logical object. |
+
+Remember
+
+> **`hashCode()` finds the bucket.**
+
+> **`equals()` finds the correct object inside the bucket.**
+
+---
+
+# Common Mistake
+
+Overriding only `equals()`.
+
+```java
+@Override
+public boolean equals(Object obj) {
+    ...
+}
+```
+
+Without overriding `hashCode()`.
+
+This breaks the behavior of
+
+- HashMap
+- HashSet
+- LinkedHashMap
+- LinkedHashSet
+
+Always override both methods together.
+
+---
+
+# Best Practice
+
+Generate both methods using your IDE.
+
+IntelliJ IDEA
+
+```
+Right Click
+
+↓
+
+Generate
+
+↓
+
+equals() and hashCode()
+```
+
+This ensures the contract is maintained.
+
+---
+
+# Summary
+
+| `==` | `equals()` |
+|------|------------|
+| Compares references | Compares logical equality (if overridden) |
+
+---
+
+| `hashCode()` | `equals()` |
+|---------------|-----------|
+| Determines the bucket | Determines the exact object inside the bucket |
+
+---
+
+# Key Takeaways
+
+- `==` compares references.
+- Default `equals()` compares references.
+- Override `equals()` to define logical equality.
+- Override `hashCode()` whenever `equals()` is overridden.
+- Equal objects must have equal hash codes.
+- `hashCode()` and `equals()` work together inside hash-based collections.
+- `hashCode()` narrows the search to a bucket.
+- `equals()` identifies the correct object inside that bucket.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is the difference between `==` and `equals()`?
+2. What does the default `equals()` method do?
+3. Why do we override `equals()`?
+4. What is `hashCode()`?
+5. Why do we override `hashCode()`?
+
+## Intermediate
+
+6. Explain the `equals()` and `hashCode()` contract.
+7. Can two objects have the same hash code?
+8. Can two equal objects have different hash codes?
+9. Why does `HashMap` use both `hashCode()` and `equals()`?
+10. What happens if only `equals()` is overridden?
+11. Explain the complete lookup flow inside a `HashMap`.
+
+# Day 5 — Chapter 18: HashMap (Part 1 — Architecture & Internal Working)
+
+## Why Was HashMap Introduced?
+
+Suppose we want to store employee records.
+
+```
+101 → Guru
+102 → Alice
+103 → Bob
+```
+
+The requirements are:
+
+- Fast insertion
+- Fast searching
+- Fast deletion
+
+Using a `List`
+
+```java
+List<Employee> employees = new ArrayList<>();
+```
+
+Searching requires checking each employee one by one.
+
+```
+101?
+
+↓
+
+Employee 1
+
+↓
+
+Employee 2
+
+↓
+
+Employee 3
+```
+
+Time Complexity
+
+```
+O(n)
+```
+
+As the number of records grows, searching becomes slow.
+
+Java introduced **HashMap** to provide **constant-time average lookup**.
+
+---
+
+# What is HashMap?
+
+**Definition**
+
+> `HashMap` is a hash table–based implementation of the `Map` interface that stores data as key-value pairs and provides fast insertion, searching, and deletion.
+
+Hierarchy
+
+```
+Object
+   │
+AbstractMap
+   │
+HashMap
+```
+
+Implements
+
+```
+Map
+```
+
+---
+
+# Characteristics
+
+- Stores key-value pairs.
+- Keys must be unique.
+- Values may be duplicated.
+- Allows one `null` key.
+- Allows multiple `null` values.
+- Not synchronized.
+- Does not maintain insertion order.
+- Average lookup complexity is **O(1)**.
+
+---
+
+# Why is HashMap Fast?
+
+Instead of searching every element,
+
+HashMap performs
+
+```
+Key
+
+↓
+
+hashCode()
+
+↓
+
+Bucket
+
+↓
+
+Entry
+```
+
+Only one bucket is searched.
+
+This makes lookup much faster than linear searching.
+
+---
+
+# What is a Hash Table?
+
+A **HashMap** is internally backed by a **Hash Table**.
+
+A hash table is simply an **array**.
+
+Example
+
+```
+Index
+
+0
+1
+2
+3
+4
+5
+6
+7
+```
+
+Each index in the array is called a **bucket**.
+
+Initially
+
+```
+Bucket 0 → null
+
+Bucket 1 → null
+
+Bucket 2 → null
+
+Bucket 3 → null
+
+Bucket 4 → null
+
+Bucket 5 → null
+
+Bucket 6 → null
+
+Bucket 7 → null
+```
+
+No entries have been inserted yet.
+
+---
+
+# What is a Bucket?
+
+A **bucket** is one slot in the internal array.
+
+Suppose the array has a capacity of **8**.
+
+```
+Index
+
+0
+1
+2
+3
+4
+5
+6
+7
+```
+
+These correspond to
+
+```
+Bucket 0
+
+Bucket 1
+
+Bucket 2
+
+...
+
+Bucket 7
+```
+
+When a key is inserted, Java determines which bucket should store it.
+
+---
+
+# Internal Architecture
+
+Conceptually
+
+```
+                 HashMap
+                     │
+                     ▼
+             Hash Table (Array)
+                     │
+      ┌────┬────┬────┬────┬────┬────┬────┬────┐
+      │ B0 │ B1 │ B2 │ B3 │ B4 │ B5 │ B6 │ B7 │
+      └────┴────┴────┴────┴────┴────┴────┴────┘
+```
+
+Initially every bucket is empty.
+
+---
+
+# What Does a Bucket Store?
+
+A bucket does **not** store only the value.
+
+It stores an **Entry (Node)**.
+
+Each entry contains
+
+```
+Hash
+
+↓
+
+Key
+
+↓
+
+Value
+
+↓
+
+Next
+```
+
+Conceptually
+
+```
++----------------------+
+| hash                 |
+| key                  |
+| value                |
+| next                 |
++----------------------+
+```
+
+- **hash** → Cached hash value
+- **key** → Map key
+- **value** → Associated value
+- **next** → Points to the next entry in case of collisions
+
+---
+
+# High-Level Insertion Flow
+
+Suppose
+
+```java
+map.put(101, "Guru");
+```
+
+The overall process is
+
+```
+Key
+
+↓
+
+hashCode()
+
+↓
+
+Hash Value
+
+↓
+
+Bucket Index
+
+↓
+
+Bucket
+
+↓
+
+Store Entry
+```
+
+HashMap directly calculates the bucket instead of searching all entries.
+
+---
+
+# Example
+
+```java
+map.put(101, "Guru");
+```
+
+Suppose
+
+```
+hashCode(101)
+
+↓
+
+3056
+```
+
+Conceptually
+
+```
+Bucket Index
+
+=
+
+3056 % 8
+
+=
+
+0
+```
+
+The entry is stored in
+
+```
+Bucket 0
+
+↓
+
+(101, Guru)
+```
+
+> **Note:** Modern `HashMap` does **not** use the `%` operator. It uses a faster bitwise calculation (`(n - 1) & hash`) because the capacity is always a power of two. We'll study the exact implementation in the next chapter.
+
+---
+
+# Why Buckets Improve Performance
+
+Without buckets
+
+```
+John
+
+↓
+
+Alice
+
+↓
+
+Bob
+
+↓
+
+David
+
+↓
+
+Emma
+```
+
+Search Complexity
+
+```
+O(n)
+```
+
+With buckets
+
+```
+Key
+
+↓
+
+Bucket
+
+↓
+
+Entry
+```
+
+Average Search Complexity
+
+```
+O(1)
+```
+
+This is the biggest advantage of HashMap.
+
+---
+
+# Example Internal Structure
+
+After inserting several entries
+
+```
+Bucket 0 → (101, Guru)
+
+Bucket 1 → null
+
+Bucket 2 → (105, Alice)
+
+Bucket 3 → null
+
+Bucket 4 → (120, Bob)
+
+Bucket 5 → null
+
+Bucket 6 → null
+
+Bucket 7 → (200, David)
+```
+
+Searching for key **120**
+
+```
+120
+
+↓
+
+hashCode()
+
+↓
+
+Bucket 4
+
+↓
+
+Found
+```
+
+Only one bucket is searched.
+
+---
+
+# Common Interview Mistakes
+
+❌ HashMap stores data in a linked list.
+
+✔ HashMap is backed by an **array (hash table)**.
+
+Linked lists are used **only when multiple entries map to the same bucket**.
+
+---
+
+❌ Buckets store only values.
+
+✔ Buckets store complete **Entry (Node)** objects.
+
+---
+
+❌ HashMap searches every bucket.
+
+✔ HashMap directly computes the bucket using the key's hash code.
+
+---
+
+# Key Takeaways
+
+- HashMap is an implementation of the `Map` interface.
+- It is backed by a **hash table (array)**.
+- Each array index is called a **bucket**.
+- Each bucket stores **Entry (Node)** objects.
+- An entry contains:
+    - hash
+    - key
+    - value
+    - next
+- HashMap uses `hashCode()` to determine the bucket.
+- Average insertion, lookup, and deletion are **O(1)**.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is a HashMap?
+2. Why was HashMap introduced?
+3. What data structure does HashMap use internally?
+4. What is a bucket?
+5. What is stored inside a bucket?
+
+## Intermediate
+
+6. Explain the internal architecture of HashMap.
+7. Why is HashMap generally faster than ArrayList for searching?
+8. Why doesn't HashMap search every bucket?
+9. Explain the complete high-level insertion flow.
+10. Why is the average time complexity of HashMap **O(1)**?
+
+# Day 5 — Chapter 19: HashMap `put()` Internal Working (Part 2)
+
+## What Happens When We Call `put()`?
+
+Suppose we write
+
+```java
+Map<Integer, String> map = new HashMap<>();
+
+map.put(101, "Guru");
+```
+
+Although it looks like a single method call, HashMap performs several internal steps.
+
+```
+put(key, value)
+
+↓
+
+Compute hash
+
+↓
+
+Calculate bucket index
+
+↓
+
+Locate bucket
+
+↓
+
+Bucket Empty?
+     │
+ ┌───┴────┐
+ │        │
+Yes      No
+ │         │
+Store    Compare Keys
+           │
+      Same Key?
+       │      │
+      Yes    No
+       │       │
+   Update   Collision
+```
+
+---
+
+# Step 1 — Compute the Hash
+
+HashMap first computes the hash code of the key.
+
+```java
+Integer key = 101;
+
+System.out.println(key.hashCode());
+```
+
+Output
+
+```
+101
+```
+
+For the `Integer` class, the hash code is simply the integer value itself.
+
+For custom objects, the result depends on the overridden `hashCode()` method.
+
+---
+
+# Step 2 — Hash Spreading
+
+HashMap does **not** directly use the value returned by `hashCode()`.
+
+Instead, Java performs an additional operation called **hash spreading**.
+
+Conceptually
+
+```java
+int hash = hashCode ^ (hashCode >>> 16);
+```
+
+Example
+
+```
+hashCode
+
+↓
+
+101
+
+↓
+
+Hash Spreading
+
+↓
+
+Improved Hash
+```
+
+### Why?
+
+If many hash codes differ only in their higher-order bits, they may all end up in the same bucket.
+
+Hash spreading mixes the higher bits into the lower bits.
+
+Benefits
+
+- Better bucket distribution.
+- Fewer collisions.
+- Improved performance.
+
+> **Note:** You do not need to memorize the bitwise expression. Just remember that Java performs hash spreading before calculating the bucket index.
+
+---
+
+# Step 3 — Calculate the Bucket Index
+
+Suppose the current table capacity is
+
+```
+16
+```
+
+Conceptually
+
+```
+Bucket Index
+
+=
+
+Hash % Capacity
+```
+
+Example
+
+```
+101 % 16
+
+=
+
+5
+```
+
+So the entry would go into
+
+```
+Bucket 5
+```
+
+---
+
+# Actual HashMap Calculation
+
+The JDK uses
+
+```java
+(n - 1) & hash
+```
+
+instead of `%`.
+
+Where
+
+- **n** = current table capacity.
+
+Example
+
+```
+Capacity = 16
+
+↓
+
+15 & hash
+
+↓
+
+Bucket Index
+```
+
+### Why use `&` instead of `%`?
+
+Because bitwise operations are much faster than division.
+
+This optimization works because HashMap capacities are always powers of two.
+
+```
+16
+32
+64
+128
+256
+...
+```
+
+---
+
+# Step 4 — Locate the Bucket
+
+Suppose the calculated bucket index is
+
+```
+Bucket 5
+```
+
+HashMap checks
+
+```
+Bucket 5
+
+↓
+
+null ?
+```
+
+---
+
+# Case 1 — Bucket Is Empty
+
+If
+
+```
+Bucket 5
+
+↓
+
+null
+```
+
+HashMap creates a new node.
+
+```
+Bucket 5
+
+↓
+
+(101, Guru)
+```
+
+Insertion is complete.
+
+Time Complexity
+
+```
+O(1)
+```
+
+---
+
+# What Is Stored Inside a Bucket?
+
+A bucket stores a **Node (Entry)**.
+
+Conceptually
+
+```java
+class Node<K, V> {
+
+    int hash;
+
+    K key;
+
+    V value;
+
+    Node<K, V> next;
+}
+```
+
+Example
+
+```
+hash = 101
+
+key = 101
+
+value = Guru
+
+next = null
+```
+
+---
+
+# Internal Representation
+
+Before insertion
+
+```
+Bucket 0 → null
+
+Bucket 1 → null
+
+Bucket 2 → null
+
+Bucket 3 → null
+
+Bucket 4 → null
+
+Bucket 5 → null
+
+Bucket 6 → null
+
+Bucket 7 → null
+```
+
+After
+
+```java
+map.put(101, "Guru");
+```
+
+```
+Bucket 5
+
+↓
+
++----------------------+
+| hash = 101           |
+| key = 101            |
+| value = Guru         |
+| next = null          |
++----------------------+
+```
+
+---
+
+# Case 2 — Bucket Already Contains an Entry
+
+Suppose
+
+```
+Bucket 5
+
+↓
+
+101 → Guru
+```
+
+Now execute
+
+```java
+map.put(101, "Updated Guru");
+```
+
+HashMap compares
+
+```
+Existing Key
+
+↓
+
+101
+```
+
+with
+
+```
+New Key
+
+↓
+
+101
+```
+
+using
+
+```java
+equals()
+```
+
+Since both keys are equal,
+
+HashMap updates the value.
+
+```
+Guru
+
+↓
+
+Updated Guru
+```
+
+No new node is created.
+
+---
+
+# Case 3 — Different Key, Same Bucket
+
+Suppose
+
+```
+Bucket 5
+
+↓
+
+101 → Guru
+```
+
+Now insert
+
+```
+205 → Alice
+```
+
+If both keys map to the same bucket,
+
+HashMap cannot replace the existing entry because the keys are different.
+
+This situation is called a **collision**.
+
+Collision handling will be covered in the next chapter.
+
+---
+
+# Complete `put()` Flow
+
+```
+put()
+
+↓
+
+hashCode()
+
+↓
+
+Hash Spreading
+
+↓
+
+Bucket Index
+
+↓
+
+Locate Bucket
+
+↓
+
+Bucket Empty?
+
+        │
+    ┌───┴────┐
+    │        │
+   Yes      No
+    │        │
+Create     Compare Keys
+ Node         │
+              │
+        Keys Equal?
+         │      │
+        Yes    No
+         │       │
+     Update   Collision
+```
+
+---
+
+# Why Is `put()` Fast?
+
+HashMap does **not** search the entire table.
+
+It directly computes the bucket.
+
+```
+Key
+
+↓
+
+Hash
+
+↓
+
+Bucket
+
+↓
+
+Store
+```
+
+Average Time Complexity
+
+```
+O(1)
+```
+
+Only collisions may increase the work.
+
+---
+
+# Common Interview Mistakes
+
+❌ `put()` always creates a new node.
+
+✔ If the key already exists, HashMap updates the value.
+
+---
+
+❌ HashMap uses `%` internally.
+
+✔ Modern HashMap uses `(n - 1) & hash`.
+
+---
+
+❌ `hashCode()` is directly used.
+
+✔ Java first performs hash spreading.
+
+---
+
+❌ Every bucket stores only one entry.
+
+✔ A bucket may store multiple entries when collisions occur.
+
+---
+
+# Key Takeaways
+
+- `put()` begins by calling `hashCode()`.
+- Java performs hash spreading to improve bucket distribution.
+- The bucket index is calculated using `(n - 1) & hash`.
+- If the bucket is empty, a new node is created.
+- If the same key already exists, the value is updated.
+- If a different key maps to the same bucket, a collision occurs.
+- Average insertion complexity is **O(1)**.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What happens when `HashMap.put()` is called?
+2. Why is `hashCode()` computed?
+3. What is hash spreading?
+4. Why does HashMap use `(n - 1) & hash`?
+5. What happens when the bucket is empty?
+
+## Intermediate
+
+6. What is stored inside a bucket?
+7. What happens if the same key is inserted twice?
+8. What causes a collision?
+9. Why is `put()` usually `O(1)`?
+10. Explain the complete `put()` algorithm.
+
+# Day 5 — Chapter 20: HashMap Collision Handling & Treeification (Java 8)
+
+## What is a Collision?
+
+A **collision** occurs when **two different keys produce the same bucket index**.
+
+> **Collision = Different Keys + Same Bucket**
+
+Example
+
+```
+Key 101
+
+↓
+
+Bucket 5
+```
+
+```
+Key 205
+
+↓
+
+Bucket 5
+```
+
+Both keys map to the same bucket.
+
+This is called a **collision**.
+
+---
+
+# Why Do Collisions Occur?
+
+A HashMap contains a **fixed number of buckets**.
+
+Example
+
+```
+Capacity = 16
+
+Buckets
+
+0
+1
+2
+...
+15
+```
+
+If we store hundreds or thousands of keys, multiple keys are guaranteed to share buckets.
+
+This follows the **Pigeonhole Principle**.
+
+> If there are more objects than containers, at least one container must contain more than one object.
+
+Therefore,
+
+> **Collisions are unavoidable.**
+
+---
+
+# How HashMap Handles Collisions
+
+HashMap does **not** reject the second key.
+
+Instead, it stores **multiple entries inside the same bucket**.
+
+Before Java 8 (and initially in Java 8 as well), this is done using a **Linked List**.
+
+Example
+
+```
+Bucket 5
+
+↓
+
+101 → Guru
+
+↓
+
+205 → Alice
+
+↓
+
+309 → Bob
+```
+
+Each entry points to the next entry.
+
+This technique is called **Separate Chaining**.
+
+---
+
+# The Internal Node Structure
+
+Each bucket stores **Node** objects.
+
+Conceptually
+
+```java
+class Node<K, V> {
+
+    int hash;
+
+    K key;
+
+    V value;
+
+    Node<K, V> next;
+}
+```
+
+Each node stores
+
+- **hash** → Cached hash value
+- **key** → Map key
+- **value** → Associated value
+- **next** → Reference to the next node in the same bucket
+
+Example
+
+```
++----------------------------+
+| hash  = 101                |
+| key   = 101                |
+| value = Guru               |
+| next  = null               |
++----------------------------+
+```
+
+---
+
+# Collision Example
+
+Insert
+
+```java
+map.put(101, "Guru");
+```
+
+```
+Bucket 5
+
+↓
+
++----------------------------+
+| hash = 101                 |
+| key = 101                  |
+| value = Guru               |
+| next = null                |
++----------------------------+
+```
+
+Insert another key that maps to the same bucket
+
+```java
+map.put(205, "Alice");
+```
+
+```
+Bucket 5
+
+↓
+
++----------------------------+
+| hash = 101                 |
+| key = 101                  |
+| value = Guru               |
+| next ---------------------+|
++---------------------------||
+                            ||
+                            \/
+                    +----------------------------+
+                    | hash = 205                 |
+                    | key = 205                  |
+                    | value = Alice             |
+                    | next = null               |
+                    +----------------------------+
+```
+
+Another collision
+
+```java
+map.put(309, "Bob");
+```
+
+```
+Bucket 5
+
+↓
+
+101 → Guru
+
+↓
+
+205 → Alice
+
+↓
+
+309 → Bob
+
+↓
+
+null
+```
+
+---
+
+# Why Does Node Have a `next` Reference?
+
+The `next` field exists so that multiple nodes can be stored inside the same bucket.
+
+Without collisions
+
+```
+Node
+
+↓
+
+next = null
+```
+
+With collisions
+
+```
+Node
+
+↓
+
+Node
+
+↓
+
+Node
+
+↓
+
+null
+```
+
+---
+
+# Searching During a Collision
+
+Suppose the bucket contains
+
+```
+101 → Guru
+
+↓
+
+205 → Alice
+
+↓
+
+309 → Bob
+```
+
+Search
+
+```java
+map.get(205);
+```
+
+HashMap performs
+
+```
+205
+
+↓
+
+hashCode()
+
+↓
+
+Bucket 5
+
+↓
+
+Compare with 101
+
+↓
+
+Not Equal
+
+↓
+
+Move to next node
+
+↓
+
+Compare with 205
+
+↓
+
+Equal
+
+↓
+
+Return "Alice"
+```
+
+Notice
+
+HashMap searches **only inside the calculated bucket**, not the entire table.
+
+---
+
+# Time Complexity
+
+## Without Collision
+
+```
+Key
+
+↓
+
+Bucket
+
+↓
+
+Found
+```
+
+Complexity
+
+```
+O(1)
+```
+
+---
+
+## With Collision
+
+```
+Bucket
+
+↓
+
+Node
+
+↓
+
+Node
+
+↓
+
+Node
+```
+
+Complexity
+
+```
+O(n)
+```
+
+Where **n** is the number of nodes inside that bucket.
+
+---
+
+# Why Too Many Collisions Are Bad
+
+Suppose every key maps to the same bucket.
+
+```
+Bucket 0
+
+↓
+
+A
+
+↓
+
+B
+
+↓
+
+C
+
+↓
+
+D
+
+↓
+
+E
+```
+
+Searching now becomes
+
+```
+O(n)
+```
+
+The HashMap behaves like a Linked List.
+
+---
+
+# Java 8 Improvement — Treeification
+
+Java 8 introduced a major optimization.
+
+If a bucket becomes too large, HashMap converts the Linked List into a **Red-Black Tree**.
+
+Searching changes from
+
+```
+O(n)
+```
+
+to
+
+```
+O(log n)
+```
+
+---
+
+# When Does Treeification Happen?
+
+Treeification occurs **during `put()`** after a new node is inserted.
+
+The decision process is
+
+```
+Insert New Node
+
+↓
+
+Count Nodes in Bucket
+
+↓
+
+Nodes >= 8 ?
+
+        │
+   No   │   Yes
+        ▼
+Capacity >= 64 ?
+
+        │
+   No   │   Yes
+        ▼
+Resize Table
+
+        OR
+
+Convert Linked List
+      into
+Red-Black Tree
+```
+
+---
+
+# Conditions for Treeification
+
+Java converts a Linked List into a Red-Black Tree only when **both** conditions are satisfied.
+
+### Condition 1
+
+The bucket contains **at least 8 nodes**.
+
+This constant is
+
+```java
+TREEIFY_THRESHOLD = 8
+```
+
+---
+
+### Condition 2
+
+The HashMap capacity is **64 or greater**.
+
+This constant is
+
+```java
+MIN_TREEIFY_CAPACITY = 64
+```
+
+If the capacity is less than 64,
+
+HashMap performs **resize** instead of treeification.
+
+---
+
+# Why Doesn't Java Treeify Immediately?
+
+Suppose
+
+```
+Capacity = 16
+```
+
+One bucket contains
+
+```
+101
+
+↓
+
+205
+
+↓
+
+309
+
+↓
+
+401
+
+↓
+
+550
+
+↓
+
+612
+
+↓
+
+720
+
+↓
+
+888
+```
+
+Although there are 8 nodes,
+
+Java first increases the table size.
+
+```
+16
+
+↓
+
+32
+
+↓
+
+64
+```
+
+After resizing, entries are redistributed into different buckets.
+
+Example
+
+Before Resize
+
+```
+Bucket 5
+
+↓
+
+101
+
+↓
+
+205
+
+↓
+
+309
+
+↓
+
+401
+
+↓
+
+550
+
+↓
+
+612
+
+↓
+
+720
+
+↓
+
+888
+```
+
+After Resize
+
+```
+Bucket 5
+
+↓
+
+101
+
+↓
+
+550
+```
+
+```
+Bucket 21
+
+↓
+
+205
+
+↓
+
+720
+```
+
+```
+Bucket 37
+
+↓
+
+309
+```
+
+```
+Bucket 53
+
+↓
+
+401
+
+↓
+
+612
+
+↓
+
+888
+```
+
+Now no bucket contains 8 nodes.
+
+Treeification is unnecessary.
+
+---
+
+# What Happens During Treeification?
+
+Initially, the bucket points to the head of a Linked List.
+
+```
+Bucket 5
+
+↓
+
+Node
+
+↓
+
+Node
+
+↓
+
+Node
+```
+
+After treeification,
+
+the bucket points to the **root of a Red-Black Tree**.
+
+```
+Bucket 5
+
+↓
+
+              (401)
+             /     \
+         (205)    (612)
+         /   \    /   \
+     (101) (309)(550)(720)
+                          \
+                          (888)
+```
+
+---
+
+# Does the Data Change?
+
+No.
+
+Each entry still stores
+
+```
+hash
+
+key
+
+value
+```
+
+The difference is **how the entries are connected**.
+
+### Before Treeification
+
+```
+Node
+
+↓
+
+next
+
+↓
+
+Node
+
+↓
+
+next
+
+↓
+
+Node
+```
+
+---
+
+### After Treeification
+
+Each node becomes a **TreeNode**.
+
+Conceptually
+
+```java
+class TreeNode<K, V> extends Node<K, V> {
+
+    TreeNode<K, V> parent;
+
+    TreeNode<K, V> left;
+
+    TreeNode<K, V> right;
+
+    TreeNode<K, V> prev;
+
+    boolean red;
+}
+```
+
+Each `TreeNode` still contains
+
+- hash
+- key
+- value
+
+But it also contains
+
+- parent
+- left
+- right
+- previous
+- node color
+
+These additional references maintain the Red-Black Tree.
+
+---
+
+# Important Constants
+
+| Constant | Value | Purpose |
+|----------|------:|---------|
+| `TREEIFY_THRESHOLD` | 8 | Convert a Linked List into a Red-Black Tree. |
+| `UNTREEIFY_THRESHOLD` | 6 | Convert a Red-Black Tree back into a Linked List after removals. |
+| `MIN_TREEIFY_CAPACITY` | 64 | Minimum HashMap capacity required before treeification is allowed. |
+
+---
+
+# Complete Collision Flow
+
+```
+put()
+
+↓
+
+Compute Hash
+
+↓
+
+Calculate Bucket
+
+↓
+
+Bucket Empty?
+
+        │
+   ┌────┴────┐
+   │         │
+  Yes       No
+   │         │
+Insert   Compare Keys
+            │
+     Keys Equal?
+
+        │
+   ┌────┴────┐
+   │         │
+  Yes       No
+   │         │
+Update   Add New Node
+              │
+      Bucket Size >= 8 ?
+
+              │
+        Capacity >= 64 ?
+
+        │            │
+      No            Yes
+       │             │
+   Resize      Treeify Bucket
+```
+
+---
+
+# Common Interview Mistakes
+
+❌ Collisions indicate a broken `hashCode()`.
+
+✔ Collisions are normal and unavoidable.
+
+---
+
+❌ HashMap immediately converts collisions into a Red-Black Tree.
+
+✔ It first uses a Linked List.
+
+---
+
+❌ Eight nodes always cause treeification.
+
+✔ Treeification requires:
+
+- Bucket size ≥ 8
+- Capacity ≥ 64
+
+Otherwise, HashMap resizes.
+
+---
+
+❌ Treeification changes the stored data.
+
+✔ Only the structure changes.
+
+The same entries (`hash`, `key`, `value`) are reorganized into a Red-Black Tree.
+
+---
+
+# Key Takeaways
+
+- A collision occurs when different keys map to the same bucket.
+- HashMap resolves collisions using **Separate Chaining**.
+- Each bucket stores `Node` objects.
+- Each `Node` contains:
+    - hash
+    - key
+    - value
+    - next
+- Initially, collisions form a Linked List.
+- Java 8 converts long Linked Lists into Red-Black Trees.
+- Treeification occurs only when:
+    - Bucket size ≥ 8
+    - HashMap capacity ≥ 64
+- If capacity is less than 64, HashMap resizes instead.
+- Treeification improves lookup from **O(n)** to **O(log n)** for heavily populated buckets.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is a collision?
+2. Why are collisions unavoidable?
+3. How does HashMap handle collisions?
+4. What is Separate Chaining?
+5. What fields does a `HashMap.Node` contain?
+
+## Intermediate
+
+6. Why does `Node` contain a `next` reference?
+7. Explain how `HashMap.get()` works after a collision.
+8. When does Java convert a Linked List into a Red-Black Tree?
+9. Why doesn't Java treeify immediately?
+10. What are `TREEIFY_THRESHOLD`, `UNTREEIFY_THRESHOLD`, and `MIN_TREEIFY_CAPACITY`?
+11. What changes internally when a bucket is treeified?
+12. How does treeification improve performance?
+
+# Day 5 — Chapter 21: HashMap `get()` Internal Working
+
+## Why Study `get()`?
+
+When we write
+
+```java
+String name = map.get(205);
+```
+
+HashMap performs several internal operations before returning the value.
+
+Internally it must answer:
+
+- Which bucket should I search?
+- What if multiple entries exist in the bucket?
+- How do I identify the correct key?
+- What happens if the bucket has become a Red-Black Tree?
+
+---
+
+# High-Level Flow
+
+```
+get(key)
+
+↓
+
+Compute hash
+
+↓
+
+Hash Spreading
+
+↓
+
+Calculate Bucket Index
+
+↓
+
+Locate Bucket
+
+↓
+
+Bucket Empty?
+
+      │
+ ┌────┴────┐
+ │         │
+Yes       No
+ │          │
+Return     Compare Keys
+null          │
+              │
+        Match Found?
+         │       │
+        Yes     No
+         │        │
+ Return Value  Next Node / Tree Search
+```
+
+---
+
+# Example Setup
+
+```java
+Map<Integer, String> map = new HashMap<>();
+
+map.put(101, "Guru");
+map.put(205, "Alice");
+map.put(309, "Bob");
+```
+
+Assume all three keys map to the same bucket.
+
+```
+Bucket 5
+
+↓
+
+101 → Guru
+
+↓
+
+205 → Alice
+
+↓
+
+309 → Bob
+```
+
+---
+
+# Step 1 — Compute the Hash
+
+```java
+map.get(205);
+```
+
+HashMap computes
+
+```java
+205.hashCode();
+```
+
+For an `Integer`
+
+```
+hash = 205
+```
+
+---
+
+# Step 2 — Hash Spreading
+
+Java performs hash spreading.
+
+Conceptually
+
+```java
+hash ^ (hash >>> 16)
+```
+
+Purpose
+
+- Better distribution
+- Fewer collisions
+- Improved performance
+
+---
+
+# Step 3 — Calculate the Bucket Index
+
+Suppose the table capacity is
+
+```
+16
+```
+
+HashMap calculates
+
+```java
+(n - 1) & hash
+```
+
+Suppose the result is
+
+```
+Bucket 5
+```
+
+HashMap directly jumps to Bucket 5.
+
+It never searches every bucket.
+
+---
+
+# Step 4 — Check Whether the Bucket Is Empty
+
+Suppose
+
+```
+Bucket 5
+
+↓
+
+null
+```
+
+Then
+
+```java
+map.get(205);
+```
+
+returns
+
+```java
+null
+```
+
+Time Complexity
+
+```
+O(1)
+```
+
+---
+
+# Step 5 — Compare Keys
+
+Suppose Bucket 5 contains
+
+```
+101 → Guru
+
+↓
+
+205 → Alice
+
+↓
+
+309 → Bob
+```
+
+HashMap compares
+
+```
+101.equals(205)
+```
+
+Result
+
+```
+false
+```
+
+Move to next node.
+
+Now compare
+
+```
+205.equals(205)
+```
+
+Result
+
+```
+true
+```
+
+Return
+
+```
+Alice
+```
+
+---
+
+# Why Doesn't HashMap Compare Only Hash Codes?
+
+Suppose
+
+```
+Student A
+
+hashCode()
+
+↓
+
+10
+```
+
+```
+Student B
+
+hashCode()
+
+↓
+
+10
+```
+
+Different objects can have the same hash code.
+
+Therefore HashMap must also call
+
+```java
+equals()
+```
+
+Only if
+
+```java
+equals() == true
+```
+
+does HashMap return the value.
+
+---
+
+# Searching Inside a Linked List
+
+```
+Bucket 5
+
+↓
+
+101
+
+↓
+
+205
+
+↓
+
+309
+
+↓
+
+401
+```
+
+Searching for
+
+```
+401
+```
+
+HashMap compares
+
+```
+101
+
+↓
+
+205
+
+↓
+
+309
+
+↓
+
+401
+```
+
+Found.
+
+Time Complexity
+
+```
+O(n)
+```
+
+where **n** is the number of nodes inside that bucket.
+
+---
+
+# Searching Inside a Red-Black Tree
+
+If the bucket has been treeified
+
+```
+          309
+        /     \
+      205     550
+     /   \    /  \
+   101  250 401 700
+```
+
+Searching for
+
+```
+401
+```
+
+Traversal
+
+```
+309
+
+↓
+
+550
+
+↓
+
+401
+```
+
+Time Complexity
+
+```
+O(log n)
+```
+
+---
+
+# Simplified Internal Algorithm
+
+```java
+public V get(Object key) {
+
+    int hash = spreadHash(key.hashCode());
+
+    int bucketIndex = calculateBucket(hash);
+
+    Node node = table[bucketIndex];
+
+    while (node != null) {
+
+        if (node.hash == hash &&
+            node.key.equals(key)) {
+
+            return node.value;
+        }
+
+        node = node.next;
+    }
+
+    return null;
+}
+```
+
+> This is a simplified version for learning. The actual JDK implementation contains additional optimizations and special handling for treeified buckets.
+
+---
+
+# Complete `get()` Flow
+
+```
+get(key)
+
+↓
+
+hashCode()
+
+↓
+
+Hash Spreading
+
+↓
+
+Bucket Index
+
+↓
+
+Locate Bucket
+
+↓
+
+Bucket Empty?
+
+        │
+    ┌───┴────┐
+    │        │
+   Yes      No
+    │        │
+Return     Compare Hash
+ null          │
+               ▼
+        Compare equals()
+               │
+       ┌───────┴────────┐
+       │                │
+    Match           No Match
+       │                │
+Return Value     Next Node / Tree Search
+```
+
+---
+
+# Time Complexity
+
+| Scenario | Complexity |
+|----------|------------|
+| Normal lookup | **O(1)** |
+| Linked List bucket | **O(n)** |
+| Red-Black Tree bucket | **O(log n)** |
+
+---
+
+# Common Interview Mistakes
+
+❌ `get()` searches every bucket.
+
+✔ It searches only the calculated bucket.
+
+---
+
+❌ Matching hash codes are enough.
+
+✔ HashMap also uses `equals()`.
+
+---
+
+❌ Collisions return incorrect values.
+
+✔ `equals()` ensures the correct key is found.
+
+---
+
+❌ Treeification changes the bucket selection process.
+
+✔ Treeification only changes how entries are searched **inside** the bucket.
+
+---
+
+# Key Takeaways
+
+- `get()` computes the hash and bucket index.
+- HashMap directly jumps to the correct bucket.
+- If the bucket is empty, it returns `null`.
+- It compares both `hash` and `equals()` to locate the correct key.
+- Linked List buckets have **O(n)** lookup.
+- Red-Black Tree buckets have **O(log n)** lookup.
+- Average lookup complexity remains **O(1)**.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What happens internally when `HashMap.get()` is called?
+2. Why doesn't HashMap search every bucket?
+3. Why is `equals()` required even after matching hash codes?
+4. What happens if the bucket is empty?
+5. What does `get()` return when the key is absent?
+
+## Intermediate
+
+6. Explain the complete `get()` algorithm.
+7. How does `HashMap.get()` work during collisions?
+8. How does searching differ in a Linked List and a Red-Black Tree?
+9. Why does HashMap compare both `hash` and `equals()`?
+10. Compare the time complexities of `get()` in different scenarios.
+
+# Day 5 — Chapter 22.1: HashMap Resizing vs Treeification
+
+One of the most confusing topics in `HashMap` is understanding the difference between **Resizing** and **Treeification**.
+
+Although both improve performance, they solve **different problems**.
+
+---
+
+# Two Different Mechanisms
+
+| Resizing | Treeification |
+|----------|---------------|
+| Affects the entire `HashMap` | Affects only one bucket |
+| Increases the number of buckets | Converts one bucket from a Linked List to a Red-Black Tree |
+| Triggered by the total number of entries | Triggered by too many nodes in a single bucket |
+
+---
+
+# 1. Resizing
+
+## Purpose
+
+Resizing increases the size of the hash table to reduce collisions across the entire `HashMap`.
+
+---
+
+## When Does Resizing Happen?
+
+Resizing depends on **three values**.
+
+### Capacity
+
+The total number of buckets.
+
+Example
+
+```
+Capacity = 16
+```
+
+---
+
+### Load Factor
+
+The percentage of the table that can be filled before resizing.
+
+Default
+
+```
+Load Factor = 0.75
+```
+
+---
+
+### Threshold
+
+The maximum number of entries allowed before resizing.
+
+Formula
+
+```
+Threshold = Capacity × Load Factor
+```
+
+Example
+
+```
+Capacity = 16
+
+Load Factor = 0.75
+
+Threshold = 12
+```
+
+---
+
+## Resize Example
+
+Suppose
+
+```
+Capacity = 16
+
+Threshold = 12
+```
+
+Insert entries
+
+```
+Entry 1
+
+↓
+
+Entry 2
+
+↓
+
+...
+
+↓
+
+Entry 12
+```
+
+No resize.
+
+Insert
+
+```
+Entry 13
+```
+
+Now
+
+```
+Entries = 13
+
+Threshold = 12
+
+13 > 12
+```
+
+HashMap performs a **resize**.
+
+---
+
+## What Happens During Resizing?
+
+Old table
+
+```
+Capacity = 16
+```
+
+```
++----+----+----+----+----+----+----+----+
+| B0 | B1 | B2 | B3 | ...              |
++----+----+----+----+----+----+----+----+
+```
+
+↓
+
+Create a new table
+
+```
+Capacity = 32
+```
+
+↓
+
+Move every existing entry into the new table.
+
+Each entry gets a new bucket index based on the new capacity.
+
+This process redistributes the entries and usually reduces collisions.
+
+---
+
+## Time Complexity
+
+```
+O(n)
+```
+
+where **n** is the total number of entries.
+
+---
+
+# 2. Treeification
+
+## Purpose
+
+Treeification speeds up searching inside **one heavily populated bucket**.
+
+Instead of searching a Linked List (`O(n)`), HashMap uses a Red-Black Tree (`O(log n)`).
+
+---
+
+## When Does Treeification Happen?
+
+Both conditions must be satisfied.
+
+### Condition 1
+
+Bucket contains **8 or more nodes**.
+
+```
+TREEIFY_THRESHOLD = 8
+```
+
+---
+
+### Condition 2
+
+HashMap capacity is at least
+
+```
+64
+```
+
+```
+MIN_TREEIFY_CAPACITY = 64
+```
+
+Only then does HashMap convert the bucket into a Red-Black Tree.
+
+---
+
+# Treeification Example
+
+Suppose
+
+```
+Capacity = 64
+```
+
+Bucket 5 contains
+
+```
+101
+
+↓
+
+205
+
+↓
+
+309
+
+↓
+
+401
+
+↓
+
+550
+
+↓
+
+612
+
+↓
+
+720
+
+↓
+
+888
+```
+
+There are **8 nodes**.
+
+HashMap checks
+
+```
+Bucket Size >= 8 ?
+
+↓
+
+Yes
+
+↓
+
+Capacity >= 64 ?
+
+↓
+
+Yes
+
+↓
+
+Convert Linked List
+
+↓
+
+Red-Black Tree
+```
+
+---
+
+# What If Capacity Is Less Than 64?
+
+Suppose
+
+```
+Capacity = 16
+```
+
+Bucket 5 contains
+
+```
+101
+
+↓
+
+205
+
+↓
+
+309
+
+↓
+
+401
+
+↓
+
+550
+
+↓
+
+612
+
+↓
+
+720
+
+↓
+
+888
+```
+
+HashMap checks
+
+```
+Bucket Size >= 8 ?
+
+↓
+
+Yes
+
+↓
+
+Capacity >= 64 ?
+
+↓
+
+No
+```
+
+Instead of treeifying,
+
+HashMap performs a **resize**.
+
+Why?
+
+Increasing the number of buckets may redistribute the entries into different buckets, eliminating the long linked list.
+
+---
+
+# Complete Decision Flow
+
+```
+Insert New Entry
+
+↓
+
+Find Bucket
+
+↓
+
+Collision?
+
+↓
+
+Add New Node
+
+↓
+
+Bucket Size >= 8 ?
+
+        │
+   ┌────┴────┐
+   │         │
+  No        Yes
+              │
+              ▼
+     Capacity >= 64 ?
+
+        │
+   ┌────┴────┐
+   │         │
+  No        Yes
+   │          │
+Resize    Treeify Bucket
+
+↓
+
+After Insertion
+
+↓
+
+Total Entries > Threshold ?
+
+        │
+   ┌────┴────┐
+   │         │
+  No        Yes
+              │
+      Resize Entire HashMap
+```
+
+> **Note:** In the actual JDK implementation, the resize check is part of the `put()` operation. The important concept is that resizing depends on the **total entries**, while treeification depends on the **number of nodes in a single bucket**.
+
+---
+
+# Resizing vs Treeification
+
+| Feature | Resizing | Treeification |
+|----------|----------|---------------|
+| Scope | Entire HashMap | One Bucket |
+| Trigger | Total entries exceed threshold | Bucket has ≥ 8 nodes and capacity ≥ 64 |
+| What changes? | Creates a larger hash table | Converts Linked List into Red-Black Tree |
+| Capacity Changes? | Yes | No |
+| Bucket Count Changes? | Yes | No |
+| Improves | Overall collision rate | Lookup speed inside one bucket |
+
+---
+
+# Memory Trick
+
+Think of a city.
+
+### Resizing
+
+```
+Entire City
+
+↓
+
+Too many people
+
+↓
+
+Build More Roads
+
+↓
+
+City Becomes Larger
+```
+
+Equivalent to
+
+```
+More Buckets
+```
+
+---
+
+### Treeification
+
+```
+One Apartment Building
+
+↓
+
+Too many residents
+
+↓
+
+Reorganize Building
+
+↓
+
+Faster Navigation
+```
+
+Equivalent to
+
+```
+Linked List
+
+↓
+
+Red-Black Tree
+```
+
+---
+
+# Key Takeaways
+
+- **Capacity** is the number of buckets.
+- **Entries** are the total key-value pairs stored.
+- **Threshold = Capacity × Load Factor**.
+- Resizing occurs when **total entries exceed the threshold**.
+- Resizing doubles the capacity and redistributes all entries.
+- Treeification affects only one bucket.
+- Treeification requires:
+    - Bucket size ≥ 8
+    - Capacity ≥ 64
+- If capacity is less than 64, HashMap resizes instead of treeifying.
+
+---
+
+# Interview Questions
+
+## Basic
+
+1. What is resizing in `HashMap`?
+2. What triggers resizing?
+3. What is treeification?
+4. What triggers treeification?
+5. Why doesn't Java treeify immediately?
+
+## Intermediate
+
+6. Explain the difference between resizing and treeification.
+7. Why is the minimum capacity for treeification 64?
+8. What happens internally during resizing?
+9. How does treeification improve lookup performance?
+10. Can resizing and treeification both occur during a `put()` operation? Explain.
+
