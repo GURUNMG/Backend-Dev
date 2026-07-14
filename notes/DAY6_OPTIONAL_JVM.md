@@ -1565,3 +1565,2179 @@ public User getUser(Long id) {
 
 This combines filtering, absence handling, and custom exception handling into a clean, readable, production-ready pipeline.
 
+# Day 7 - Module 2: JVM Architecture
+
+# JVM Architecture (Deep Dive)
+
+## Goal
+
+Understand what happens inside the JVM from the moment a Java program starts until it terminates.
+
+---
+
+# Why Was JVM Introduced?
+
+Before Java, programs were **platform dependent**.
+
+Example
+
+```
+C Source Code
+
+↓
+
+Windows Compiler
+
+↓
+
+Windows.exe
+```
+
+The executable generated for Windows cannot run on Linux or macOS.
+
+To run the same application on Linux, it must be compiled again using a Linux compiler.
+
+Problems:
+
+- Platform dependent
+- Multiple binaries
+- Difficult maintenance
+- Difficult deployment
+
+---
+
+# Java's Solution
+
+Java introduced the concept of
+
+```
+Write Once, Run Anywhere (WORA)
+```
+
+Instead of compiling directly into machine code, Java compiles into **Bytecode**.
+
+```
+Java Source (.java)
+
+↓
+
+javac
+
+↓
+
+Bytecode (.class)
+
+↓
+
+JVM
+
+↓
+
+Machine Code
+```
+
+Every operating system has its own JVM implementation.
+
+```
+Same Bytecode
+
+↓
+
+Windows JVM
+
+↓
+
+Windows Machine Code
+```
+
+```
+Same Bytecode
+
+↓
+
+Linux JVM
+
+↓
+
+Linux Machine Code
+```
+
+```
+Same Bytecode
+
+↓
+
+macOS JVM
+
+↓
+
+macOS Machine Code
+```
+
+Therefore the same `.class` file can execute on any platform that has a compatible JVM.
+
+---
+
+# What is JVM?
+
+**JVM (Java Virtual Machine)** is a software-based virtual machine responsible for executing Java bytecode.
+
+It acts as an abstraction layer between Java applications and the operating system.
+
+```
+Java Program
+
+↓
+
+JVM
+
+↓
+
+Operating System
+
+↓
+
+Hardware
+```
+
+---
+
+# Responsibilities of JVM
+
+The JVM performs several important tasks:
+
+- Loads classes into memory.
+- Verifies bytecode for safety.
+- Creates runtime memory areas.
+- Executes bytecode.
+- Performs Just-In-Time (JIT) compilation.
+- Manages memory.
+- Performs Garbage Collection.
+- Provides security.
+- Supports multithreading.
+- Enables platform independence.
+
+---
+
+# JDK vs JRE vs JVM
+
+This is one of the most common interview questions.
+
+---
+
+## JVM (Java Virtual Machine)
+
+Responsibilities
+
+- Executes bytecode.
+- Manages memory.
+- Performs Garbage Collection.
+- Uses Interpreter and JIT Compiler.
+- Provides runtime environment.
+
+```
+JVM
+
+↓
+
+Executes Java Bytecode
+```
+
+---
+
+## JRE (Java Runtime Environment)
+
+Contains
+
+- JVM
+- Java Standard Libraries
+- Runtime resources
+
+Purpose
+
+Used to **run Java applications**.
+
+Cannot compile Java source code.
+
+```
+JRE
+
+├── JVM
+└── Java Libraries
+```
+
+---
+
+## JDK (Java Development Kit)
+
+Contains
+
+- JRE
+- JVM
+- javac compiler
+- javadoc
+- jar
+- jdb
+- Other development tools
+
+Purpose
+
+Used to **develop and run Java applications**.
+
+```
+JDK
+
+├── JRE
+│   ├── JVM
+│   └── Libraries
+│
+├── javac
+├── jar
+├── javadoc
+└── jdb
+```
+
+---
+
+# Relationship
+
+```
+JDK
+
+↓
+
+JRE
+
+↓
+
+JVM
+```
+
+Remember
+
+```
+JDK ⊃ JRE ⊃ JVM
+```
+
+---
+
+# What Happens When We Run a Java Program?
+
+Example
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        System.out.println("Hello JVM");
+
+    }
+
+}
+```
+
+Command
+
+```bash
+java Main
+```
+
+Execution Flow
+
+---
+
+## Step 1
+
+The Operating System creates a new JVM process.
+
+```
+Operating System
+
+↓
+
+JVM Process
+```
+
+---
+
+## Step 2
+
+The Class Loader loads required classes.
+
+Examples
+
+```
+Main.class
+
+Object.class
+
+String.class
+
+System.class
+```
+
+---
+
+## Step 3
+
+Bytecode Verification
+
+The JVM verifies that the bytecode is valid.
+
+Checks include
+
+- Correct instructions
+- Type safety
+- Proper stack usage
+- No illegal memory access
+
+If verification fails
+
+```
+VerifyError
+```
+
+is thrown.
+
+---
+
+## Step 4
+
+The JVM creates Runtime Data Areas.
+
+```
+Runtime Data Areas
+
+├── Heap
+├── Stack
+├── Metaspace
+├── Program Counter Register
+└── Native Method Stack
+```
+
+These memory areas are used during program execution.
+
+---
+
+## Step 5
+
+The JVM creates the Main Thread.
+
+Each thread receives
+
+- One Stack
+- One Program Counter Register
+
+---
+
+## Step 6
+
+Execution Engine starts executing bytecode.
+
+Initially
+
+```
+Interpreter
+```
+
+executes bytecode instruction by instruction.
+
+Frequently executed code ("hot code") is then compiled by the
+
+```
+JIT Compiler
+```
+
+into native machine code for better performance.
+
+---
+
+## Step 7
+
+Garbage Collector starts running in the background.
+
+Responsibilities
+
+- Finds unreachable objects.
+- Reclaims unused heap memory.
+- Prevents memory exhaustion.
+
+---
+
+# High-Level JVM Architecture
+
+```
+                Java Source
+                     │
+                  javac
+                     │
+              Bytecode (.class)
+                     │
+              Class Loader
+                     │
+           Bytecode Verifier
+                     │
+        Runtime Data Areas
+                     │
+        Execution Engine
+                     │
+      Native Machine Code
+                     │
+           Operating System
+                     │
+                Hardware
+```
+
+---
+
+# Runtime Data Areas
+
+```
+JVM Runtime
+
+├── Heap
+├── Stack
+├── Metaspace
+├── PC Register
+└── Native Method Stack
+```
+
+We will study each area separately in the upcoming modules.
+
+---
+
+# Major Components of JVM
+
+## 1. Class Loader
+
+Loads `.class` files into memory.
+
+---
+
+## 2. Bytecode Verifier
+
+Checks bytecode safety before execution.
+
+---
+
+## 3. Runtime Data Areas
+
+Stores
+
+- Objects
+- Local variables
+- Class metadata
+- Method execution data
+
+---
+
+## 4. Execution Engine
+
+Responsible for executing bytecode.
+
+Contains
+
+- Interpreter
+- JIT Compiler
+
+---
+
+## 5. Garbage Collector
+
+Automatically removes unreachable objects from Heap memory.
+
+---
+
+## 6. Java Native Interface (JNI)
+
+Allows Java code to call native C/C++ libraries.
+
+---
+
+# Why Backend Engineers Should Know JVM
+
+Understanding JVM internals helps in
+
+- Diagnosing `OutOfMemoryError`
+- Diagnosing `StackOverflowError`
+- Debugging memory leaks
+- Optimizing application performance
+- Tuning Garbage Collection
+- Understanding multithreading
+- Explaining JVM behavior in interviews
+
+---
+
+# Key Takeaways
+
+- JVM executes Java bytecode.
+- Java achieves platform independence through bytecode and JVM.
+- JDK contains JRE.
+- JRE contains JVM.
+- JVM creates runtime memory areas.
+- JVM verifies bytecode before execution.
+- Execution Engine consists of Interpreter and JIT Compiler.
+- Garbage Collector automatically manages heap memory.
+
+---
+
+# Interview Questions
+
+## What is JVM?
+
+A software-based virtual machine that executes Java bytecode, manages memory, performs garbage collection, verifies bytecode, and optimizes execution using JIT compilation.
+
+---
+
+## Why is Java platform independent?
+
+Java source code is compiled into platform-independent bytecode. Each operating system provides its own JVM, which converts the bytecode into native machine code.
+
+---
+
+## Difference between JDK, JRE, and JVM?
+
+| JDK | JRE | JVM |
+|-----|-----|-----|
+| Development Kit | Runtime Environment | Virtual Machine |
+| Contains compiler and tools | Contains JVM and libraries | Executes bytecode |
+| Used for development | Used for execution | Used for runtime execution |
+
+---
+
+## What happens when `java Main` is executed?
+
+1. JVM process starts.
+2. Class Loader loads required classes.
+3. Bytecode is verified.
+4. Runtime memory areas are created.
+5. Main thread is created.
+6. Execution Engine executes bytecode.
+7. Garbage Collector starts managing memory.
+
+---
+
+## Important Formula
+
+```
+Java Source
+
+↓
+
+javac
+
+↓
+
+Bytecode (.class)
+
+↓
+
+JVM
+
+↓
+
+Machine Code
+```
+
+# Day 7 - Module 3: Stack Memory (Deep Dive)
+
+# Stack Memory
+
+## Goal
+
+Understand:
+
+- What Stack Memory is
+- Why every thread has its own stack
+- Stack Frames
+- Local Variable Table
+- Operand Stack
+- Return Address
+- Method execution
+- StackOverflowError
+- Stack vs Heap
+
+---
+
+# Why Do We Need Stack Memory?
+
+Whenever a Java program runs, methods are continuously called.
+
+Example
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        greet();
+
+    }
+
+    static void greet() {
+
+        System.out.println("Hello");
+
+    }
+
+}
+```
+
+Questions:
+
+- Which method is currently executing?
+- Where should execution return after `greet()` finishes?
+- Where are local variables stored?
+- How are nested method calls managed?
+
+The JVM solves these problems using **Stack Memory**.
+
+---
+
+# What is Stack Memory?
+
+Stack Memory is a **thread-private runtime memory area** used to manage **method execution**.
+
+It stores:
+
+- Method calls
+- Stack Frames
+- Local variables
+- Method parameters
+- Operand Stack
+- Return addresses
+- Frame metadata
+
+---
+
+# Stack Follows LIFO
+
+Stack uses
+
+```
+LIFO
+
+Last In
+
+First Out
+```
+
+Example
+
+```
+Top
+
+Method C
+
+Method B
+
+Method A
+
+Bottom
+```
+
+Execution order
+
+```
+Method C finishes
+
+↓
+
+Method B finishes
+
+↓
+
+Method A finishes
+```
+
+The last method called is always the first one to return.
+
+---
+
+# Why Does Every Thread Have Its Own Stack?
+
+Suppose two threads share one stack.
+
+Thread 1
+
+```
+main()
+
+↓
+
+calculate()
+
+↓
+
+save()
+```
+
+Thread 2
+
+```
+main()
+
+↓
+
+login()
+
+↓
+
+authenticate()
+```
+
+If both shared the same stack
+
+```
+main()
+
+calculate()
+
+login()
+
+save()
+
+authenticate()
+```
+
+Problems
+
+- Method executions become mixed.
+- Return addresses become incorrect.
+- Local variables interfere.
+- Execution becomes unpredictable.
+
+---
+
+## Solution
+
+Each thread gets its own private stack.
+
+```
+Thread 1
+
+Stack
+
+main()
+
+calculate()
+
+save()
+```
+
+```
+Thread 2
+
+Stack
+
+main()
+
+login()
+
+authenticate()
+```
+
+Benefits
+
+- Thread safety
+- No synchronization required
+- Independent execution
+- Faster access
+
+---
+
+# Stack Creation
+
+Whenever a thread starts
+
+```
+new Thread()
+
+↓
+
+JVM
+
+↓
+
+Creates a new Stack
+```
+
+When the thread finishes
+
+```
+Stack
+
+↓
+
+Destroyed automatically
+```
+
+No Garbage Collection is required.
+
+---
+
+# What is a Stack Frame?
+
+Every method call creates one Stack Frame.
+
+Example
+
+```java
+public class Demo {
+
+    public static void main(String[] args) {
+
+        add(10,20);
+
+    }
+
+    static int add(int a,int b){
+
+        int sum = a + b;
+
+        return sum;
+
+    }
+
+}
+```
+
+Execution
+
+```
+main()
+
+↓
+
+add()
+```
+
+Stack
+
+```
+Top
+
+add()
+
+main()
+```
+
+When `add()` completes
+
+```
+Top
+
+main()
+```
+
+The `add()` frame is automatically removed.
+
+---
+
+# Stack Frame Structure
+
+Every Stack Frame contains
+
+```
+Stack Frame
+
+──────────────────────
+
+Local Variable Table
+
+Operand Stack
+
+Return Address
+
+Frame Metadata
+
+──────────────────────
+```
+
+---
+
+# 1. Local Variable Table
+
+Stores
+
+- Primitive local variables
+- Object references
+- Method parameters
+
+Example
+
+```java
+static void test(){
+
+    int age = 25;
+
+    String name = "Guru";
+
+}
+```
+
+Stored
+
+```
+Slot 0
+
+age = 25
+```
+
+```
+Slot 1
+
+reference → String Object
+```
+
+Important
+
+Only the **reference** is stored.
+
+The actual object is stored in Heap Memory.
+
+---
+
+## Example
+
+```java
+User user = new User();
+```
+
+Memory
+
+```
+Stack
+
+user
+
+↓
+
+Heap
+
+User Object
+```
+
+---
+
+# Local Variables
+
+Stored in Stack
+
+```java
+int x = 10;
+
+double salary = 5000;
+
+boolean active = true;
+```
+
+All primitive local variables remain inside the Local Variable Table.
+
+---
+
+# Object References
+
+Stored in Stack
+
+```java
+String name = "Guru";
+
+User user = new User();
+```
+
+Objects
+
+```
+"Guru"
+
+User
+```
+
+are stored in Heap.
+
+Only references exist in Stack.
+
+---
+
+# Method Parameters
+
+Example
+
+```java
+void add(int a, int b)
+```
+
+The parameters
+
+```
+a
+
+b
+```
+
+are also stored in the Local Variable Table.
+
+---
+
+# 2. Operand Stack
+
+The Operand Stack is used by the JVM while executing bytecode instructions.
+
+Example
+
+```java
+int c = a + b;
+```
+
+Conceptually
+
+```
+Load a
+
+↓
+
+Push
+
+↓
+
+Load b
+
+↓
+
+Push
+
+↓
+
+Add
+
+↓
+
+Store Result
+```
+
+The Operand Stack is temporary working memory used during instruction execution.
+
+---
+
+# 3. Return Address
+
+Suppose
+
+```java
+main();
+
+↓
+
+add();
+
+↓
+
+main();
+```
+
+After `add()` completes, the JVM must know where to continue execution.
+
+The Return Address stores this location.
+
+Conceptually
+
+```
+main()
+
+↓
+
+add()
+
+↓
+
+Return to next instruction
+```
+
+---
+
+# 4. Frame Metadata
+
+Stores internal JVM information.
+
+Examples
+
+- Constant Pool reference
+- Exception handling information
+- Method metadata
+
+This information is used internally by the JVM.
+
+---
+
+# Method Execution
+
+Example
+
+```java
+main()
+
+↓
+
+A()
+
+↓
+
+B()
+
+↓
+
+C()
+```
+
+Stack
+
+```
+Top
+
+C()
+
+B()
+
+A()
+
+main()
+```
+
+When `C()` returns
+
+```
+Top
+
+B()
+
+A()
+
+main()
+```
+
+Then
+
+```
+A()
+
+↓
+
+main()
+```
+
+Finally
+
+```
+main()
+```
+
+When `main()` finishes
+
+```
+Stack becomes empty.
+```
+
+---
+
+# Why is Stack Memory Fast?
+
+Reasons
+
+- Sequential allocation
+- Sequential deallocation
+- LIFO structure
+- No Garbage Collection
+- No fragmentation
+- Push/Pop operations are simple pointer updates
+
+Therefore Stack Memory is significantly faster than Heap Memory.
+
+---
+
+# Stack Characteristics
+
+| Property | Stack |
+|----------|--------|
+| Per Thread | ✅ Yes |
+| Stores Stack Frames | ✅ Yes |
+| Stores Local Variables | ✅ Yes |
+| Stores Primitive Variables | ✅ Yes |
+| Stores Object References | ✅ Yes |
+| Stores Objects | ❌ No |
+| Automatic Allocation | ✅ Yes |
+| Automatic Deallocation | ✅ Yes |
+| Uses Garbage Collector | ❌ No |
+| Thread Safe | ✅ Yes |
+| Allocation Speed | Very Fast |
+
+---
+
+# Common Misconception
+
+Wrong
+
+```
+Objects are stored in Stack.
+```
+
+Correct
+
+```
+Stack
+
+↓
+
+Object Reference
+```
+
+```
+Heap
+
+↓
+
+Actual Object
+```
+
+Example
+
+```java
+Employee employee =
+        new Employee();
+```
+
+Memory
+
+```
+Stack
+
+employee
+
+↓
+
+Heap
+
+Employee Object
+```
+
+---
+
+# StackOverflowError
+
+Example
+
+```java
+public class Demo {
+
+    static void test(){
+
+        test();
+
+    }
+
+    public static void main(String[] args){
+
+        test();
+
+    }
+
+}
+```
+
+Execution
+
+```
+test()
+
+↓
+
+test()
+
+↓
+
+test()
+
+↓
+
+test()
+
+↓
+
+...
+```
+
+Each call creates another Stack Frame.
+
+Eventually
+
+```
+Stack becomes full.
+```
+
+JVM throws
+
+```
+StackOverflowError
+```
+
+Reason
+
+```
+Too many Stack Frames
+```
+
+Not
+
+```
+Heap Memory Problem
+```
+
+---
+
+# Stack vs Heap
+
+| Feature | Stack | Heap |
+|----------|--------|------|
+| Stores | Method execution data | Objects |
+| Scope | Thread specific | Shared among threads |
+| Allocation | Automatic | Dynamic |
+| Deallocation | Automatic | Garbage Collector |
+| Speed | Faster | Slower |
+| Thread Safety | Naturally thread-safe | Requires synchronization for shared objects |
+| Memory Size | Smaller | Larger |
+
+---
+
+# Best Practices
+
+✅ Avoid unnecessary deep recursion.
+
+✅ Prefer iteration if recursion depth can become very large.
+
+✅ Keep local variables inside methods whenever possible.
+
+✅ Understand that object references live in Stack while objects live in Heap.
+
+---
+
+# Key Takeaways
+
+- Stack Memory manages method execution.
+- Every thread owns its own Stack.
+- Every method call creates a Stack Frame.
+- Stack follows the LIFO principle.
+- Local variables and method parameters are stored in the Local Variable Table.
+- Object references are stored in the Stack; objects themselves are stored in the Heap.
+- Operand Stack is used during bytecode execution.
+- Return Address tells the JVM where to continue after a method returns.
+- Stack allocation is very fast because it requires no Garbage Collection.
+- Infinite or very deep recursion causes `StackOverflowError`.
+
+---
+
+# Interview Questions
+
+## What is Stack Memory?
+
+A per-thread runtime memory area used to manage method execution. It stores Stack Frames, local variables, method parameters, operand stacks, return addresses, and frame metadata.
+
+---
+
+## Why does every thread have its own Stack?
+
+To isolate method execution and local variables, ensuring independent execution and thread safety without synchronization.
+
+---
+
+## What is a Stack Frame?
+
+A Stack Frame is created for every method invocation. It contains all the information required to execute that method, including local variables, operand stack, return address, and frame metadata.
+
+---
+
+## Are objects stored in Stack Memory?
+
+No.
+
+Only object references are stored in the Stack.
+
+The actual objects are allocated in Heap Memory.
+
+---
+
+## What causes `StackOverflowError`?
+
+Excessive or infinite method calls (usually recursion) create too many Stack Frames, exhausting the thread's stack memory.
+
+---
+
+## Why is Stack Memory faster than Heap Memory?
+
+Because allocation and deallocation follow the LIFO principle, requiring only pointer updates and no Garbage Collection.
+
+# Day 7 - Module 4: Heap Memory (Deep Dive)
+
+# Heap Memory
+
+## Goal
+
+Understand:
+
+- Why Heap Memory exists
+- Object allocation
+- Why Heap is shared
+- Young Generation
+- Eden Space
+- Survivor Spaces
+- Old Generation
+- Object lifecycle
+- Object promotion
+- Heap vs Stack
+
+---
+
+# Why Do We Need Heap Memory?
+
+Consider the following code.
+
+```java
+User user = new User();
+```
+
+Question:
+
+Where should the object be stored?
+
+Can it be stored inside Stack Memory?
+
+No.
+
+Why?
+
+Because Stack Memory is used only for **method execution**.
+
+Example
+
+```java
+void test(){
+
+    User user = new User();
+
+}
+```
+
+When `test()` finishes
+
+```
+Stack Frame
+
+↓
+
+Destroyed
+```
+
+If the object were stored in Stack Memory, it would also disappear.
+
+However, objects often need to survive beyond the method that created them.
+
+Example
+
+```java
+User user = service.findUser();
+```
+
+The object is created inside `findUser()` but is returned to the caller.
+
+Therefore, it must continue to exist after the method returns.
+
+This is why Java uses **Heap Memory**.
+
+---
+
+# What is Heap Memory?
+
+Heap Memory is the **runtime memory area where Java objects and arrays are dynamically allocated**.
+
+Characteristics
+
+- Shared by all threads
+- Stores objects
+- Stores arrays
+- Managed by Garbage Collector
+- Larger than Stack Memory
+
+Conceptually
+
+```
+                JVM
+
+        +----------------------+
+        |        Heap          |
+        +----------------------+
+
+         ▲        ▲        ▲
+
+     Thread1  Thread2  Thread3
+```
+
+Every thread can access objects stored in the Heap.
+
+---
+
+# Why is Heap Shared?
+
+Suppose
+
+Thread 1
+
+```java
+User user = repository.findById(1);
+```
+
+Thread 2
+
+```java
+orderService.placeOrder(user);
+```
+
+Both threads need access to the same object.
+
+If every thread had its own Heap
+
+- Objects could not be shared easily.
+- Duplicate copies would be required.
+- Memory usage would increase significantly.
+
+Therefore Java provides **one shared Heap per JVM**.
+
+---
+
+# Stack vs Heap
+
+Example
+
+```java
+User user = new User();
+```
+
+Memory Layout
+
+```
+Stack
+
+user
+
+↓
+
+Heap
+
+User Object
+```
+
+Important
+
+Stack stores
+
+```
+Reference
+```
+
+Heap stores
+
+```
+Actual Object
+```
+
+---
+
+# Object Allocation
+
+Example
+
+```java
+User user = new User();
+```
+
+Conceptual steps
+
+```
+Step 1
+
+Allocate memory in Heap.
+```
+
+↓
+
+```
+Step 2
+
+Initialize instance variables with default values.
+```
+
+↓
+
+```
+Step 3
+
+Execute constructor.
+```
+
+↓
+
+```
+Step 4
+
+Return object reference.
+```
+
+↓
+
+```
+Step 5
+
+Store reference inside Stack.
+```
+
+Visualization
+
+```
+Heap
+
++---------------+
+
+User Object
+
++---------------+
+
+↓
+
+Reference
+
+↓
+
+Stack
+
+user ─────────► User Object
+```
+
+---
+
+# Heap Structure
+
+Modern JVM divides Heap into generations.
+
+```
+Heap
+
+├── Young Generation
+
+│     ├── Eden
+
+│     ├── Survivor 0 (S0)
+
+│     └── Survivor 1 (S1)
+
+│
+
+└── Old Generation
+```
+
+This organization improves Garbage Collection performance.
+
+---
+
+# Why is Heap Divided?
+
+Observation made by JVM designers
+
+```
+Most objects die young.
+```
+
+Examples
+
+```java
+new UserDTO();
+
+new ArrayList<>();
+
+new String();
+
+new HashMap<>();
+```
+
+Many temporary objects become unreachable almost immediately.
+
+Instead of treating every object equally, JVM groups objects based on age.
+
+---
+
+# Young Generation
+
+Every newly created object starts here.
+
+Example
+
+```java
+new User();
+```
+
+Allocation
+
+```
+Young Generation
+
+↓
+
+Eden Space
+```
+
+Young Generation consists of
+
+```
+Young Generation
+
+├── Eden
+
+├── Survivor 0
+
+└── Survivor 1
+```
+
+---
+
+# Eden Space
+
+Every new object is first allocated in Eden.
+
+Example
+
+```java
+new User();
+
+new Employee();
+
+new ArrayList();
+
+new String();
+```
+
+Conceptually
+
+```
+Eden
+
+User
+
+Employee
+
+ArrayList
+
+String
+```
+
+As more objects are created
+
+```
+Eden
+
+↓
+
+Becomes Full
+```
+
+---
+
+# Minor Garbage Collection
+
+When Eden becomes full
+
+JVM performs
+
+```
+Minor Garbage Collection
+```
+
+Suppose
+
+```
+User
+
+Alive
+```
+
+```
+Employee
+
+Alive
+```
+
+```
+ArrayList
+
+Dead
+```
+
+```
+String
+
+Dead
+```
+
+Dead objects are removed.
+
+Alive objects are copied to Survivor Space.
+
+---
+
+# Survivor Spaces
+
+Young Generation contains
+
+```
+Survivor 0
+
+Survivor 1
+```
+
+Only one Survivor Space is active at a time.
+
+Example
+
+After first Minor GC
+
+```
+Eden
+
+↓
+
+Empty
+```
+
+```
+Survivor 0
+
+User
+
+Employee
+```
+
+Next Minor GC
+
+```
+Survivor 0
+
+↓
+
+Survivor 1
+```
+
+Objects keep moving between Survivor spaces.
+
+---
+
+# Object Aging
+
+Every object has an age.
+
+Example
+
+```
+User
+
+Age = 1
+```
+
+↓
+
+```
+Minor GC
+```
+
+↓
+
+```
+Age = 2
+```
+
+↓
+
+```
+Minor GC
+```
+
+↓
+
+```
+Age = 3
+```
+
+The age increases every time the object survives a Minor GC.
+
+---
+
+# Object Promotion
+
+After surviving several Minor Garbage Collections
+
+the object is promoted.
+
+```
+Young Generation
+
+↓
+
+Old Generation
+```
+
+The promotion threshold is configurable.
+
+A common default is around **15**, though it may vary depending on JVM settings.
+
+---
+
+# Old Generation
+
+Stores long-lived objects.
+
+Examples
+
+- Spring Beans
+- Singleton Objects
+- Cached Data
+- Session Objects
+- Configuration Objects
+
+Visualization
+
+```
+Young Generation
+
+↓
+
+Object survives many GCs
+
+↓
+
+Old Generation
+```
+
+Garbage Collection occurs less frequently here because scanning large, long-lived objects is more expensive.
+
+---
+
+# Why Do Most Objects Die Young?
+
+Example
+
+```java
+public void process(){
+
+    UserDTO dto = new UserDTO();
+
+    dto.setName("Guru");
+
+}
+```
+
+After the method returns
+
+```
+Stack Frame
+
+↓
+
+Destroyed
+```
+
+The reference disappears.
+
+The object becomes unreachable.
+
+This happens millions of times in enterprise applications.
+
+Therefore
+
+```
+Most Objects
+
+↓
+
+Created
+
+↓
+
+Used Briefly
+
+↓
+
+Garbage Collected
+```
+
+This observation is the basis of the generational Heap design.
+
+---
+
+# Heap Characteristics
+
+| Property | Heap |
+|-----------|------|
+| Shared by Threads | ✅ Yes |
+| Stores Objects | ✅ Yes |
+| Stores Arrays | ✅ Yes |
+| Stores Instance Variables | ✅ Yes |
+| Stores Primitive Local Variables | ❌ No |
+| Uses Garbage Collector | ✅ Yes |
+| Allocation | Dynamic |
+| Size | Larger than Stack |
+
+---
+
+# Common Misconception
+
+Wrong
+
+```
+Primitive variables are always stored in Stack.
+```
+
+Correct
+
+Local primitive variables
+
+```java
+void test(){
+
+    int age = 25;
+
+}
+```
+
+Stored in
+
+```
+Stack
+```
+
+Instance primitive variables
+
+```java
+class User{
+
+    int age;
+
+}
+```
+
+Stored inside the object.
+
+```
+Heap
+
+↓
+
+User Object
+
+↓
+
+age
+```
+
+---
+
+# Heap vs Stack
+
+| Feature | Heap | Stack |
+|----------|------|--------|
+| Purpose | Object Storage | Method Execution |
+| Shared | Yes | No |
+| Per Thread | No | Yes |
+| Stores Objects | ✅ Yes | ❌ No |
+| Stores References | Indirectly inside objects | ✅ Yes |
+| Stores Local Variables | ❌ No | ✅ Yes |
+| Memory Management | Garbage Collector | Automatic Pop |
+| Allocation Speed | Slower | Faster |
+| Lifetime | Until unreachable | Until method returns |
+
+---
+
+# Best Practices
+
+✅ Avoid creating unnecessary temporary objects.
+
+✅ Reuse expensive objects where appropriate.
+
+✅ Understand that object references live in Stack while objects live in Heap.
+
+✅ Avoid retaining references to unused objects, as this can prevent garbage collection.
+
+---
+
+# Key Takeaways
+
+- Heap Memory stores all Java objects and arrays.
+- There is one Heap per JVM, shared by all threads.
+- New objects are allocated in Eden Space.
+- Eden belongs to the Young Generation.
+- Young Generation also contains Survivor 0 and Survivor 1.
+- Objects that survive Minor GCs move between Survivor spaces.
+- Long-lived objects are promoted to the Old Generation.
+- Most objects die young, which is why the Heap is divided into generations.
+- Heap Memory is managed by the Garbage Collector.
+
+---
+
+# Interview Questions
+
+## What is Heap Memory?
+
+Heap Memory is the shared runtime memory area where Java objects and arrays are dynamically allocated. It is managed automatically by the Garbage Collector.
+
+---
+
+## Why is Heap shared among threads?
+
+To allow multiple threads to access the same objects without creating duplicate copies, improving memory efficiency and enabling object sharing.
+
+---
+
+## Where are new objects created?
+
+All newly created objects are initially allocated in the **Eden Space** of the Young Generation.
+
+---
+
+## What are Survivor Spaces?
+
+Survivor 0 (S0) and Survivor 1 (S1) are temporary regions that hold objects which survive Minor Garbage Collections before they are promoted to the Old Generation.
+
+---
+
+## What is Object Promotion?
+
+Object Promotion is the process of moving long-lived objects from the Young Generation to the Old Generation after they survive multiple Minor Garbage Collections.
+
+---
+
+## Why is Heap divided into generations?
+
+Because most Java objects have short lifetimes. Separating young and long-lived objects allows the Garbage Collector to reclaim memory more efficiently.
+
+---
+
+## Where are instance variables stored?
+
+Instance variables are stored inside the object itself, which resides in the Heap.
+
+Example
+
+```java
+class User{
+
+    int age;
+
+}
+```
+
+The `age` field is part of the `User` object in Heap Memory.
