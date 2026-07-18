@@ -123,7 +123,7 @@ public class Singleton {
 
 ---
 
-# 7. Why each keyword?
+# 7. Why private constructor?
 
 ## private constructor
 
@@ -637,3 +637,616 @@ To prevent instruction reordering and ensure visibility across threads.
 - Bill Pugh is the preferred lazy implementation.
 - Enum Singleton is the safest and simplest implementation.
 - Spring uses singleton-scoped beans by default but manages them through the IoC container.
+
+# Day 8 — Design Patterns
+# Factory Pattern Notes
+
+---
+
+# 1. Why was the Factory Pattern introduced?
+
+Before Factory Pattern, object creation was done directly using the `new` keyword.
+
+Example:
+
+```java
+Payment payment = new CreditCardPayment();
+```
+
+Although this works, it creates **tight coupling** because the client knows:
+
+- The concrete class
+- The constructor
+- How the object is created
+
+If the implementation changes, every client must also change.
+
+Example:
+
+```java
+CreditCardPayment
+```
+
+becomes
+
+```java
+StripePayment
+```
+
+Every occurrence of
+
+```java
+new CreditCardPayment()
+```
+
+must be modified.
+
+---
+
+# 2. What is the Factory Pattern?
+
+## Definition
+
+> Factory Pattern is a creational design pattern that delegates object creation to a factory instead of allowing clients to instantiate objects directly.
+
+The client requests an object.
+
+The factory decides **which implementation** should be created.
+
+---
+
+# 3. What Problem Does Factory Pattern Solve?
+
+Factory Pattern mainly solves:
+
+- Tight Coupling
+- Duplicate object creation logic
+- Poor maintainability
+- Difficult testing
+- Violation of the Open/Closed Principle
+
+Instead of:
+
+```java
+new CreditCardPayment();
+```
+
+Client writes:
+
+```java
+Payment payment =
+        PaymentFactory.create("CARD");
+```
+
+The client depends only on the abstraction.
+
+---
+
+# 4. Architecture
+
+Without Factory
+
+```text
+Client
+
+↓
+
+new CreditCardPayment()
+```
+
+With Factory
+
+```text
+Client
+
+↓
+
+Factory
+
+↓
+
+Creates Appropriate Object
+
+↓
+
+Returns Interface
+```
+
+---
+
+# 5. Interview Definition
+
+> Factory Pattern is a creational design pattern that centralizes object creation by delegating instantiation to a factory, reducing coupling between clients and concrete implementations while improving extensibility and maintainability.
+
+---
+
+# 6. Types of Factory Patterns
+
+1. Simple Factory (Not GoF)
+2. Factory Method (GoF)
+3. Abstract Factory (GoF)
+
+---
+
+# 7. Simple Factory Pattern
+
+## Definition
+
+A Simple Factory is a class responsible for creating objects based on input and returning the appropriate implementation.
+
+Example:
+
+```java
+Payment payment =
+        PaymentFactory.create("UPI");
+```
+
+The client does not use `new`.
+
+The factory creates the object.
+
+---
+
+## Structure
+
+```text
+Client
+
+↓
+
+PaymentFactory
+
+↓
+
+Card
+UPI
+PayPal
+```
+
+---
+
+## Components
+
+### Product Interface
+
+```java
+public interface Payment {
+
+    void pay();
+
+}
+```
+
+---
+
+### Concrete Products
+
+```text
+CreditCardPayment
+
+UpiPayment
+
+PaypalPayment
+```
+
+---
+
+### Factory
+
+```java
+public class PaymentFactory {
+
+    public static Payment create(String type){
+
+        if(type.equals("CARD"))
+            return new CreditCardPayment();
+
+        if(type.equals("UPI"))
+            return new UpiPayment();
+
+        if(type.equals("PAYPAL"))
+            return new PaypalPayment();
+
+        throw new IllegalArgumentException();
+    }
+
+}
+```
+
+---
+
+## Advantages
+
+- Centralized object creation
+- Loose coupling
+- Easier maintenance
+- Less duplicate code
+- Programming to interfaces
+
+---
+
+## Disadvantages
+
+The factory grows as more products are added.
+
+Every new product requires modifying the factory.
+
+Violates the Open/Closed Principle.
+
+---
+
+## Is Simple Factory a GoF Pattern?
+
+No.
+
+Simple Factory is a design technique.
+
+It is **not** one of the 23 Gang of Four patterns.
+
+---
+
+# 8. Factory Method Pattern (GoF)
+
+## Definition
+
+> Factory Method defines an interface for creating objects while allowing subclasses to decide which concrete object to instantiate.
+
+Instead of one large factory,
+
+every product gets its own factory.
+
+---
+
+## Structure
+
+```text
+PaymentFactory
+
+▲
+
+CardFactory
+
+UpiFactory
+
+PaypalFactory
+```
+
+Each factory creates only one product.
+
+---
+
+## Product Hierarchy
+
+```text
+Payment
+
+▲
+
+Card
+
+UPI
+
+PayPal
+```
+
+---
+
+## Factory Hierarchy
+
+```text
+PaymentFactory
+
+▲
+
+CardFactory
+
+UpiFactory
+
+PaypalFactory
+```
+
+---
+
+## Factory Interface
+
+```java
+public interface PaymentFactory {
+
+    Payment createPayment();
+
+}
+```
+
+---
+
+## Concrete Factory
+
+```java
+public class CardFactory
+        implements PaymentFactory {
+
+    @Override
+    public Payment createPayment() {
+        return new CreditCardPayment();
+    }
+
+}
+```
+
+---
+
+## Client
+
+```java
+PaymentFactory factory =
+        new CardFactory();
+
+Payment payment =
+        factory.createPayment();
+
+payment.pay();
+```
+
+---
+
+## Advantages
+
+- Better scalability
+- Open/Closed Principle
+- No giant if-else
+- Better separation of responsibilities
+- Loose coupling
+
+---
+
+## Disadvantages
+
+More classes.
+
+One factory per product.
+
+---
+
+# 9. Factory Method vs Simple Factory
+
+| Simple Factory | Factory Method |
+|----------------|----------------|
+| One factory | Multiple factories |
+| Uses if/switch | Uses inheritance |
+| Factory modified for new products | Add a new factory |
+| Not GoF | Official GoF Pattern |
+
+---
+
+# 10. Abstract Factory Pattern
+
+## Definition
+
+> Abstract Factory provides an interface for creating families of related objects without specifying their concrete classes.
+
+Unlike Factory Method,
+
+it creates **multiple related products**.
+
+---
+
+## Product Family Example
+
+Windows
+
+- WindowsButton
+- WindowsCheckbox
+
+Mac
+
+- MacButton
+- MacCheckbox
+
+Each family is compatible.
+
+---
+
+## Factory Interface
+
+```java
+public interface GUIFactory {
+
+    Button createButton();
+
+    Checkbox createCheckbox();
+
+}
+```
+
+---
+
+## Windows Factory
+
+```java
+public class WindowsFactory
+        implements GUIFactory {
+
+    @Override
+    public Button createButton() {
+        return new WindowsButton();
+    }
+
+    @Override
+    public Checkbox createCheckbox() {
+        return new WindowsCheckbox();
+    }
+
+}
+```
+
+---
+
+## Client
+
+```java
+GUIFactory factory =
+        new WindowsFactory();
+
+Button button =
+        factory.createButton();
+
+Checkbox checkbox =
+        factory.createCheckbox();
+```
+
+---
+
+## Architecture
+
+```text
+GUIFactory
+
+▲
+
+WindowsFactory
+
+MacFactory
+
+↓
+
+Creates
+
+Button
+
+Checkbox
+```
+
+---
+
+## Advantages
+
+- Creates compatible product families
+- Open/Closed Principle
+- Loose coupling
+- Easy platform switching
+- Centralized family creation
+
+---
+
+## Disadvantages
+
+Large number of classes.
+
+Adding a new product type requires updating every factory.
+
+---
+
+# 11. Factory Method vs Abstract Factory
+
+| Factory Method | Abstract Factory |
+|----------------|------------------|
+| Creates one product | Creates a family of products |
+| One creation method | Multiple creation methods |
+| One factory per product | One factory per product family |
+| Focuses on one object | Focuses on compatible objects |
+
+---
+
+# 12. Overall Comparison
+
+| Feature | Simple Factory | Factory Method | Abstract Factory |
+|----------|----------------|----------------|------------------|
+| GoF Pattern | ❌ | ✅ | ✅ |
+| Number of Factories | One | Many | One per family |
+| Products Created | One | One | Multiple |
+| Uses if/switch | Yes | No | No |
+| Uses Inheritance | No | Yes | Yes |
+| Uses Polymorphism | Yes | Yes | Yes |
+| Open/Closed Principle | Weak | Strong | Strong |
+| Best Use Case | Small applications | Frequently adding product types | Creating compatible product families |
+
+---
+
+# 13. Production Examples
+
+## Simple Factory
+
+- Notification creation
+- Payment gateway selection
+- Parser selection
+
+---
+
+## Factory Method
+
+- Spring Bean creation
+- Logging framework implementations
+- JDBC Driver loading
+- Document exporters (PDF, Excel, Word)
+
+---
+
+## Abstract Factory
+
+- Cross-platform GUI toolkits
+- Database drivers
+- Cloud provider SDKs
+- Theme/UI frameworks
+
+---
+
+# 14. Interview Questions
+
+### Q1. What problem does Factory Pattern solve?
+
+It separates object creation from business logic, reducing tight coupling and improving maintainability.
+
+---
+
+### Q2. Why is using `new` everywhere a problem?
+
+Because the client becomes tightly coupled to concrete implementations.
+
+---
+
+### Q3. Difference between Simple Factory and Factory Method?
+
+Simple Factory uses one factory with conditional logic.
+
+Factory Method uses specialized factories and inheritance.
+
+---
+
+### Q4. Difference between Factory Method and Abstract Factory?
+
+Factory Method creates one object.
+
+Abstract Factory creates an entire family of related objects.
+
+---
+
+### Q5. Is Simple Factory a GoF pattern?
+
+No.
+
+---
+
+### Q6. Which Factory pattern follows the Open/Closed Principle best?
+
+Factory Method and Abstract Factory.
+
+---
+
+# 15. Cheat Sheet
+
+| Pattern | Creates | Best Use Case |
+|----------|---------|---------------|
+| Simple Factory | One Product | Small applications |
+| Factory Method | One Product | Frequently adding new product types |
+| Abstract Factory | Family of Products | Multiple compatible product families |
+
+---
+
+# Key Takeaways
+
+- Factory Pattern centralizes object creation.
+- Clients depend on interfaces rather than concrete classes.
+- **Simple Factory** centralizes object creation in one class but is not an official GoF pattern.
+- **Factory Method** delegates object creation to specialized factories and follows the Open/Closed Principle more closely.
+- **Abstract Factory** creates families of related, compatible objects through a single factory.
+- Spring, JDBC, and many enterprise frameworks apply these concepts to manage object creation and decouple client code from implementations.
