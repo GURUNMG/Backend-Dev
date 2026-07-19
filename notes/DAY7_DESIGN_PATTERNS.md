@@ -1250,3 +1250,792 @@ Factory Method and Abstract Factory.
 - **Factory Method** delegates object creation to specialized factories and follows the Open/Closed Principle more closely.
 - **Abstract Factory** creates families of related, compatible objects through a single factory.
 - Spring, JDBC, and many enterprise frameworks apply these concepts to manage object creation and decouple client code from implementations.
+
+# Builder Pattern (GoF Creational Pattern)
+
+---
+
+# 1. Definition
+
+> **Builder Pattern is a Creational Design Pattern that constructs a complex object step-by-step while separating the construction process from the object's representation.**
+
+Unlike a constructor, a Builder allows us to create an object gradually by setting only the required fields before finally calling `build()`.
+
+---
+
+# 2. Why was Builder Pattern introduced?
+
+## Problem Before Builder
+
+Suppose we have a `User` class.
+
+```java
+public class User {
+
+    private String name;
+    private String email;
+    private int age;
+    private String city;
+    private String country;
+
+}
+```
+
+Using constructors:
+
+```java
+User user = new User(
+    "Guru",
+    "guru@gmail.com",
+    24,
+    "Chennai",
+    "India"
+);
+```
+
+As the number of fields increases:
+
+- Constructor becomes difficult to read.
+- Easy to swap parameters accidentally.
+- Difficult to know which parameter represents what.
+
+This is called the **Telescoping Constructor Problem**.
+
+---
+
+# 3. Problems with Telescoping Constructors
+
+Example
+
+```java
+User user = new User(
+        "Guru",
+        "guru@gmail.com",
+        24,
+        "Chennai",
+        "India",
+        "9876543210",
+        "Male",
+        true,
+        LocalDate.now()
+);
+```
+
+Problems
+
+- Poor readability
+- Hard to maintain
+- Parameter order mistakes
+- Constructor explosion
+- Difficult to support optional fields
+
+---
+
+# 4. JavaBeans Approach
+
+Instead of constructors
+
+```java
+User user = new User();
+
+user.setName("Guru");
+user.setEmail("guru@gmail.com");
+user.setAge(24);
+```
+
+Advantages
+
+- Easy to read
+- Supports optional fields
+
+Disadvantages
+
+- Mutable object
+- Object may remain incomplete
+- No guarantee object is valid
+- Not thread-safe by default
+
+---
+
+# 5. Builder Pattern Solution
+
+```java
+User user = User.builder()
+        .name("Guru")
+        .email("guru@gmail.com")
+        .age(24)
+        .city("Chennai")
+        .build();
+```
+
+Advantages
+
+- Fluent API
+- Easy to read
+- Supports optional fields
+- Validation before creation
+- Can create immutable objects
+
+---
+
+# 6. Structure
+
+```
+Client
+   │
+   ▼
+Builder
+   │
+Stores values
+   │
+   ▼
+build()
+   │
+Creates object
+   │
+   ▼
+Product
+```
+
+---
+
+# 7. Components
+
+## Product
+
+The object being created.
+
+```java
+public class User {
+
+}
+```
+
+---
+
+## Builder
+
+Collects values.
+
+```java
+User.Builder
+```
+
+---
+
+## Fluent Methods
+
+```java
+.name()
+
+.email()
+
+.age()
+```
+
+Each returns
+
+```java
+return this;
+```
+
+for method chaining.
+
+---
+
+## build()
+
+Creates the final object.
+
+```java
+public User build() {
+
+    return new User(this);
+
+}
+```
+
+---
+
+# 8. Complete Manual Implementation
+
+```java
+public class User {
+
+    private final String name;
+    private final String email;
+    private final int age;
+
+    private User(Builder builder) {
+        this.name = builder.name;
+        this.email = builder.email;
+        this.age = builder.age;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private String name;
+        private String email;
+        private int age;
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public Builder age(int age) {
+            this.age = age;
+            return this;
+        }
+
+        public User build() {
+            return new User(this);
+        }
+    }
+}
+```
+
+---
+
+# 9. Runtime Flow
+
+```
+User.builder()
+
+↓
+
+Builder Object Created
+
+↓
+
+name()
+
+↓
+
+email()
+
+↓
+
+age()
+
+↓
+
+build()
+
+↓
+
+User Object Created
+```
+
+---
+
+# 10. Why return `this`?
+
+```java
+public Builder name(String name) {
+
+    this.name = name;
+
+    return this;
+
+}
+```
+
+`this` refers to the current Builder object.
+
+Returning `this` enables method chaining.
+
+```java
+User.builder()
+    .name(...)
+    .email(...)
+    .age(...)
+```
+
+---
+
+# 11. Why is Builder a Static Nested Class?
+
+```java
+public static class Builder
+```
+
+Without `static`
+
+```java
+User.Builder builder =
+        user.new Builder();
+```
+
+A `User` object would be required before creating the Builder.
+
+But the Builder itself is responsible for creating the `User`.
+
+Using `static` removes this circular dependency.
+
+---
+
+# 12. Does `this` work inside a static nested Builder?
+
+Yes.
+
+`static` applies to the **Builder class**, not its instances.
+
+```java
+Builder builder = new Builder();
+```
+
+The Builder object is a normal object.
+
+Inside
+
+```java
+this.name = name;
+```
+
+`this` refers to the Builder instance.
+
+---
+
+# 13. Mandatory vs Optional Fields
+
+Suppose
+
+```
+name   → Mandatory
+
+email  → Mandatory
+
+age    → Optional
+
+city   → Optional
+```
+
+Approach 1
+
+```java
+new Builder()
+```
+
+Validate later.
+
+Approach 2
+
+```java
+new Builder(name,email)
+```
+
+Mandatory values enforced during Builder creation.
+
+Preferred for domain models.
+
+---
+
+# 14. Validation
+
+Validation should occur before object creation.
+
+```java
+public User build() {
+
+    validate();
+
+    return new User(this);
+
+}
+```
+
+Example
+
+```java
+private void validate() {
+
+    if(name == null)
+        throw new IllegalStateException();
+
+    if(email == null)
+        throw new IllegalStateException();
+
+}
+```
+
+This guarantees that invalid objects are never created.
+
+---
+
+# 15. Why validate inside build()?
+
+Because only `build()` has access to the complete Builder state.
+
+Example
+
+```
+password
+
+confirmPassword
+```
+
+Validation requires both values.
+
+`build()` is the ideal place.
+
+---
+
+# 16. builder() Method
+
+Instead of
+
+```java
+new User.Builder()
+```
+
+Most libraries expose
+
+```java
+User.builder()
+```
+
+Implementation
+
+```java
+public static Builder builder() {
+
+    return new Builder();
+
+}
+```
+
+Advantages
+
+- Cleaner API
+- Hides Builder implementation
+- Easier maintenance
+- Consistent with Java libraries
+
+---
+
+# 17. Builder with Lombok
+
+Simple data class
+
+```java
+@Getter
+@Builder
+public class User {
+
+    private final String name;
+    private final String email;
+    private final int age;
+
+}
+```
+
+Lombok generates
+
+- Builder class
+- builder()
+- build()
+- Fluent methods
+
+---
+
+# 18. Constructor-Level @Builder
+
+Recommended when validation is required.
+
+```java
+@Getter
+public class User {
+
+    private final String name;
+    private final String email;
+    private final int age;
+
+    @Builder
+    public User(String name,
+                String email,
+                int age) {
+
+        if(name == null)
+            throw new IllegalArgumentException();
+
+        if(email == null)
+            throw new IllegalArgumentException();
+
+        this.name = name;
+        this.email = email;
+        this.age = age;
+
+    }
+
+}
+```
+
+Builder calls the constructor.
+
+Constructor performs validation.
+
+---
+
+# 19. Does Lombok Validate?
+
+No.
+
+```java
+User.builder()
+    .build();
+```
+
+Compiles successfully.
+
+Validation must be implemented by
+
+- Constructor
+- Bean Validation
+- Custom build() logic
+
+---
+
+# 20. How Lombok Works
+
+Lombok is an **Annotation Processor**.
+
+During compilation it generates
+
+- Builder class
+- builder()
+- build()
+- Fluent setter methods
+
+It does **not** use reflection.
+
+---
+
+# 21. toBuilder()
+
+```java
+@Builder(toBuilder = true)
+```
+
+Allows
+
+```java
+User updated =
+        user.toBuilder()
+            .city("Bangalore")
+            .build();
+```
+
+Useful for immutable objects.
+
+Creates a new object while copying existing values.
+
+---
+
+# 22. Step Builder Pattern
+
+Purpose
+
+Move validation from runtime to compile time.
+
+Construction flow
+
+```
+builder()
+
+↓
+
+name()
+
+↓
+
+email()
+
+↓
+
+optional fields
+
+↓
+
+build()
+```
+
+Implemented using multiple interfaces.
+
+Advantages
+
+- Compile-time safety
+- Mandatory field enforcement
+- Prevents invalid construction order
+
+Disadvantages
+
+- More boilerplate
+- Rarely used in typical Spring Boot applications
+
+---
+
+# 23. Builder vs Factory
+
+| Builder | Factory |
+|----------|----------|
+| How to build an object | Which object to create |
+| Step-by-step construction | Immediate creation |
+| Handles optional fields | Chooses implementation |
+| Usually one product | May return different products |
+
+---
+
+# 24. Builder vs JavaBeans vs Constructors
+
+| Feature | Constructor | JavaBeans | Builder |
+|----------|-------------|-----------|----------|
+| Readability | ❌ | ✅ | ✅ |
+| Optional Fields | ❌ | ✅ | ✅ |
+| Immutable | ✅ | ❌ | ✅ |
+| Validation | Limited | Difficult | Excellent |
+| Constructor Explosion | ❌ | ✅ | ✅ |
+
+---
+
+# 25. Real-World Examples
+
+Java
+
+```java
+HttpRequest.newBuilder()
+```
+
+Spring
+
+```java
+ResponseEntity.ok()
+```
+
+AWS SDK
+
+```java
+PutObjectRequest.builder()
+```
+
+Lombok
+
+```java
+User.builder()
+```
+
+Elasticsearch
+
+```java
+SearchRequest.builder()
+```
+
+---
+
+# 26. Advantages
+
+- Eliminates telescoping constructors
+- Fluent API
+- Supports optional fields
+- Validation before object creation
+- Supports immutable objects
+- Easy to read
+- Easy to maintain
+
+---
+
+# 27. Disadvantages
+
+- Additional Builder class
+- More code without Lombok
+- Slight overhead for very small objects
+- Step Builder introduces significant boilerplate
+
+---
+
+# 28. When to Use
+
+Use Builder when
+
+- Object has many optional fields
+- Constructor becomes unreadable
+- Creating immutable objects
+- Validation is required before creation
+- Fluent API improves readability
+
+Avoid Builder when
+
+- Object has only two or three mandatory fields
+- A constructor or static factory method is sufficient
+
+---
+
+# 29. Interview Questions
+
+### What problem does Builder solve?
+
+The telescoping constructor problem by allowing step-by-step object construction.
+
+---
+
+### Why use Builder instead of setters?
+
+Builder supports immutable objects, centralized validation, and prevents partially initialized objects from being exposed.
+
+---
+
+### Why is the Builder class static?
+
+To allow Builder creation without first creating the Product object.
+
+---
+
+### Why validate inside build()?
+
+Because only `build()` has the complete object state required for validation.
+
+---
+
+### Does Lombok @Builder perform validation?
+
+No.
+
+It only generates Builder code.
+
+---
+
+### Does Lombok use reflection?
+
+No.
+
+It uses annotation processing during compilation.
+
+---
+
+### What is Step Builder?
+
+An advanced Builder variation that uses Java interfaces to enforce mandatory construction steps at compile time.
+
+---
+
+### Difference between Builder and Factory?
+
+Factory decides **which object** to create.
+
+Builder decides **how an object should be constructed**.
+
+---
+
+# 30. Interview Ready Definition
+
+> **The Builder Pattern is a creational design pattern that constructs complex objects step by step while separating object construction from object representation. It solves the telescoping constructor problem, provides a fluent API, supports optional parameters, centralizes validation, and is widely used for creating immutable objects in modern Java applications.**
+
