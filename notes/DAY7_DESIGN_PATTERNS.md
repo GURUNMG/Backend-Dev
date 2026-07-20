@@ -2039,3 +2039,722 @@ Builder decides **how an object should be constructed**.
 
 > **The Builder Pattern is a creational design pattern that constructs complex objects step by step while separating object construction from object representation. It solves the telescoping constructor problem, provides a fluent API, supports optional parameters, centralizes validation, and is widely used for creating immutable objects in modern Java applications.**
 
+# Strategy Pattern (GoF Behavioral Design Pattern)
+
+---
+
+# 1. Definition
+
+> **The Strategy Pattern is a Behavioral Design Pattern that defines a family of algorithms, encapsulates each algorithm into a separate class, and makes them interchangeable at runtime without changing the client code.**
+
+The Strategy Pattern focuses on **how an operation is performed** rather than **which object is created**.
+
+---
+
+# 2. Why was Strategy Pattern introduced?
+
+Consider an E-Commerce application.
+
+Initially, only Card payment is supported.
+
+```java
+public class OrderService {
+
+    public void checkout(double amount) {
+
+        // Card Payment Logic
+
+    }
+
+}
+```
+
+After a few months:
+
+- UPI
+- PayPal
+- Net Banking
+- Apple Pay
+
+are introduced.
+
+Now the code becomes
+
+```java
+if(paymentType.equals("CARD")){
+
+}
+else if(paymentType.equals("UPI")){
+
+}
+else if(paymentType.equals("PAYPAL")){
+
+}
+```
+
+Eventually
+
+```java
+checkout()
+```
+
+becomes hundreds of lines long.
+
+---
+
+# 3. Problems Before Strategy
+
+## Problem 1
+
+Large if-else / switch statements
+
+---
+
+## Problem 2
+
+Violates Open/Closed Principle
+
+Every new payment method requires modifying the existing class.
+
+---
+
+## Problem 3
+
+Violates Single Responsibility Principle
+
+One class contains every payment algorithm.
+
+---
+
+## Problem 4
+
+Hard to Test
+
+Individual algorithms cannot be tested independently.
+
+---
+
+## Problem 5
+
+Poor Maintainability
+
+Adding new algorithms increases complexity.
+
+---
+
+# 4. Solution
+
+Move every algorithm into its own class.
+
+Instead of
+
+```
+OrderService
+
+↓
+
+if(Card)
+
+↓
+
+if(UPI)
+
+↓
+
+if(PayPal)
+```
+
+Use
+
+```
+OrderService
+
+↓
+
+PaymentStrategy
+
+↓
+
+Card
+
+UPI
+
+PayPal
+```
+
+Each algorithm becomes a separate class.
+
+---
+
+# 5. Structure
+
+```
+                Client
+
+                   │
+
+                   ▼
+
+              Context
+
+                   │
+
+                   ▼
+
+            Strategy Interface
+
+         ▲        ▲        ▲
+
+         │        │        │
+
+      Card      UPI     PayPal
+```
+
+---
+
+# 6. Components
+
+## Strategy
+
+Common interface
+
+```java
+public interface PaymentStrategy {
+
+    void pay(double amount);
+
+}
+```
+
+---
+
+## Concrete Strategy
+
+Implements one algorithm.
+
+```java
+public class CardPaymentStrategy
+        implements PaymentStrategy {
+
+    @Override
+    public void pay(double amount) {
+
+        System.out.println("Card Payment");
+
+    }
+
+}
+```
+
+---
+
+Another strategy
+
+```java
+public class UpiPaymentStrategy
+        implements PaymentStrategy {
+
+    @Override
+    public void pay(double amount) {
+
+        System.out.println("UPI Payment");
+
+    }
+
+}
+```
+
+---
+
+## Context
+
+Uses the strategy.
+
+```java
+public class OrderService {
+
+    private final PaymentStrategy paymentStrategy;
+
+    public OrderService(
+            PaymentStrategy paymentStrategy
+    ) {
+
+        this.paymentStrategy = paymentStrategy;
+
+    }
+
+    public void checkout(double amount) {
+
+        paymentStrategy.pay(amount);
+
+        System.out.println("Order Completed");
+
+    }
+
+}
+```
+
+---
+
+## Client
+
+Chooses the strategy.
+
+```java
+PaymentStrategy strategy =
+        new CardPaymentStrategy();
+
+OrderService service =
+        new OrderService(strategy);
+
+service.checkout(1000);
+```
+
+---
+
+# 7. Runtime Flow
+
+```
+Client
+
+↓
+
+Creates Strategy
+
+↓
+
+Creates Context
+
+↓
+
+checkout()
+
+↓
+
+paymentStrategy.pay()
+
+↓
+
+Concrete Strategy Executes
+```
+
+---
+
+# 8. Runtime Memory
+
+```
+Heap
+
++----------------------+
+| CardPaymentStrategy  |
++----------------------+
+          ▲
+          │
++----------------------+
+| OrderService         |
+| paymentStrategy -----+
++----------------------+
+```
+
+OrderService **has a** PaymentStrategy.
+
+This is **Composition**.
+
+---
+
+# 9. Why Composition?
+
+Bad
+
+```
+OrderService extends CardPaymentStrategy
+```
+
+OrderService is NOT a payment strategy.
+
+Good
+
+```
+OrderService HAS A PaymentStrategy
+```
+
+This follows
+
+> **Favor Composition Over Inheritance**
+
+---
+
+# 10. SOLID Principles Used
+
+## Single Responsibility Principle (SRP)
+
+Each strategy has one responsibility.
+
+```
+CardPaymentStrategy
+
+↓
+
+Only Card Logic
+```
+
+---
+
+## Open/Closed Principle (OCP)
+
+New strategies can be added without modifying existing code.
+
+```
+ApplePaymentStrategy
+
+↓
+
+No change to OrderService
+```
+
+---
+
+## Dependency Inversion Principle (DIP)
+
+Context depends on
+
+```
+PaymentStrategy
+```
+
+instead of
+
+```
+CardPaymentStrategy
+```
+
+---
+
+# 11. Strategy + Factory
+
+Strategy answers
+
+```
+How should the algorithm execute?
+```
+
+Factory answers
+
+```
+Which strategy should I return?
+```
+
+Example
+
+```java
+PaymentStrategy strategy =
+        factory.getStrategy("CARD");
+```
+
+Then
+
+```java
+strategy.pay(amount);
+```
+
+Responsibilities remain separated.
+
+---
+
+# 12. Factory Implementation
+
+```java
+public class PaymentStrategyFactory {
+
+    public PaymentStrategy getStrategy(
+            String paymentType
+    ) {
+
+        if(paymentType.equalsIgnoreCase("CARD")) {
+            return new CardPaymentStrategy();
+        }
+
+        if(paymentType.equalsIgnoreCase("UPI")) {
+            return new UpiPaymentStrategy();
+        }
+
+        throw new IllegalArgumentException();
+
+    }
+
+}
+```
+
+---
+
+# 13. Factory + Strategy Runtime Flow
+
+```
+Client
+
+↓
+
+Factory
+
+↓
+
+Returns Strategy
+
+↓
+
+OrderService
+
+↓
+
+pay()
+```
+
+Factory creates.
+
+Strategy executes.
+
+---
+
+# 14. Advantages
+
+- Eliminates large if-else statements
+- Supports runtime algorithm selection
+- Follows Open/Closed Principle
+- Easy to test individual algorithms
+- Easy to extend
+- Promotes Composition over Inheritance
+- Reduces coupling
+
+---
+
+# 15. Disadvantages
+
+- More classes
+- More interfaces
+- Slightly higher complexity
+- Overkill for simple applications
+
+---
+
+# 16. When to Use
+
+Use Strategy when
+
+- Multiple algorithms solve the same problem
+- Algorithms may grow over time
+- Runtime selection is required
+- Different implementations are independent
+- Frequent business changes are expected
+
+Examples
+
+- Payment Methods
+- Notification Channels
+- Authentication
+- Compression Algorithms
+- Tax Calculation
+- Shipping Methods
+- Discount Calculation
+
+---
+
+# 17. When NOT to Use
+
+## Only one algorithm exists
+
+```
+Only Card Payment
+```
+
+No Strategy required.
+
+---
+
+## Algorithm never changes
+
+Example
+
+```
+Rectangle Area
+```
+
+Simple method is enough.
+
+---
+
+## Tiny if-else
+
+```java
+if(age >= 18)
+```
+
+No Strategy required.
+
+---
+
+## No runtime selection
+
+Always
+
+```
+Card Payment
+```
+
+No Strategy required.
+
+---
+
+## Over-engineering
+
+Avoid creating
+
+```
+AnimalStrategy
+
+DogStrategy
+
+CatStrategy
+```
+
+when there is no real variation.
+
+---
+
+# 18. Strategy vs Factory
+
+| Strategy | Factory |
+|-----------|----------|
+| Defines algorithms | Creates objects |
+| Focuses on behavior | Focuses on object creation |
+| Executes logic | Returns implementation |
+| Runtime behavior | Object instantiation |
+
+---
+
+# 19. Strategy vs State
+
+| Strategy | State |
+|-----------|-------|
+| Client chooses algorithm | Object changes behavior based on internal state |
+| Behavior selected externally | Behavior changes automatically |
+| Independent algorithms | State transitions |
+
+---
+
+# 20. Strategy vs Template Method
+
+| Strategy | Template Method |
+|-----------|-----------------|
+| Uses composition | Uses inheritance |
+| Runtime algorithm selection | Compile-time customization |
+| Flexible | Fixed algorithm structure |
+
+---
+
+# 21. UML Diagram
+
+```
+                  +----------------------+
+                  |   PaymentStrategy    |
+                  +----------------------+
+                  | + pay(amount)        |
+                  +----------▲-----------+
+                             |
+         +-------------------+-------------------+
+         |                   |                   |
+         |                   |                   |
++----------------+ +----------------+ +----------------+
+| CardStrategy   | | UpiStrategy    | | PaypalStrategy |
++----------------+ +----------------+ +----------------+
+| pay()          | | pay()          | | pay()          |
++----------------+ +----------------+ +----------------+
+
+                  used by
+
+                      ▲
+
+                      |
+
+            +----------------------+
+            |    OrderService      |
+            +----------------------+
+            | paymentStrategy      |
+            | checkout()           |
+            +----------------------+
+```
+
+---
+
+# 22. Real-World Examples
+
+- Payment Gateway
+- Notification Service
+- Shipping Provider
+- Tax Calculation
+- Discount Engine
+- File Compression
+- Image Processing
+- Encryption Algorithms
+
+---
+
+# 23. Common Mistakes
+
+❌ Replacing every if-else with Strategy
+
+❌ Using Strategy when only one algorithm exists
+
+❌ Creating unnecessary interfaces
+
+❌ Mixing object creation with algorithm execution
+
+---
+
+# 24. Interview Questions
+
+### What problem does Strategy solve?
+
+It removes large conditional logic by encapsulating interchangeable algorithms into separate classes that can be selected at runtime.
+
+---
+
+### Which SOLID principles are used?
+
+- SRP
+- OCP
+- DIP
+
+---
+
+### Why use composition instead of inheritance?
+
+OrderService **has a** PaymentStrategy.
+
+It **is not a** PaymentStrategy.
+
+---
+
+### Why combine Factory and Strategy?
+
+Factory decides **which strategy** to create.
+
+Strategy defines **how the work is performed**.
+
+---
+
+### What is the biggest disadvantage?
+
+It introduces more classes and abstraction, making it unnecessary for simple, stable problems.
+
+---
+
+### When should Strategy be avoided?
+
+When there is only one algorithm, the logic is simple and stable, or runtime selection is not required.
+
+---
+
+# 25. Interview Ready Definition
+
+> **The Strategy Pattern is a Behavioral Design Pattern that encapsulates a family of algorithms into separate classes and makes them interchangeable at runtime. It eliminates large conditional statements, promotes composition over inheritance, follows the Open/Closed Principle, and allows applications to add new behaviors without modifying existing client code.**
+
